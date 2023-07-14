@@ -1,0 +1,79 @@
+.flex-container {
+	display: flex;
+}
+.right {
+	margin-left: 10rem;
+	max-width: 900px;
+}
+.right p {
+	color: var(--wp--preset--color--contrast);
+	font-size: revert;
+	line-height: revert;
+	margin: revert;
+	margin-top: 0;
+}
+#gpt_result h2 {
+	font-size: clamp(
+		2.625rem,
+		calc(2.625rem + ((1vw - 0.48rem) * 8.4135)),
+		3.25rem
+	);
+	line-height: 1.2;
+}
+#gpt_service1_header h2 {
+	font-size: clamp(
+		2.625rem,
+		calc(2.625rem + ((1vw - 0.48rem) * 8.4135)),
+		3.25rem
+	);
+	line-height: 1.2;
+}
+#gpt_service2_header h2 {
+	font-size: clamp(
+		2.625rem,
+		calc(2.625rem + ((1vw - 0.48rem) * 8.4135)),
+		3.25rem
+	);
+	line-height: 1.2;
+}
+#gpt_service3_header h2 {
+	font-size: clamp(
+		2.625rem,
+		calc(2.625rem + ((1vw - 0.48rem) * 8.4135)),
+		3.25rem
+	);
+	line-height: 1.2;
+}
+#gpt_service4_header h2 {
+	font-size: clamp(
+		2.625rem,
+		calc(2.625rem + ((1vw - 0.48rem) * 8.4135)),
+		3.25rem
+	);
+	line-height: 1.2;
+}
+#gpt_service5_header h2 {
+	font-size: clamp(
+		2.625rem,
+		calc(2.625rem + ((1vw - 0.48rem) * 8.4135)),
+		3.25rem
+	);
+	line-height: 1.2;
+}
+#gpt_result h3 {
+	font-size: 20px;
+	font-weight: 400;
+}
+#gpt_result_text {
+	color: var(--wp--preset--color--contrast);
+	font-family: var(--wp--preset--font-family--system-font);
+}
+
+th {
+	padding-top: 10px !important;
+	padding-bottom: 10px !important;
+}
+td {
+	padding-top: 5px !important;
+	padding-bottom: 5px !important;
+}

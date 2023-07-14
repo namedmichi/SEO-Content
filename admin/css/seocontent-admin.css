@@ -1,0 +1,203 @@
+/**
+ * All of the CSS for your admin-specific functionality should be
+ * included in this file.
+ */
+.wp-heading-inline {
+	display: inline-block;
+	margin-right: 5px;
+	font-size: 23px;
+	font-weight: 400;
+	margin: 0;
+	padding: 9px 0 4px;
+	line-height: 1.3;
+	color: #1d2327;
+}
+.settingsContainer {
+	width: 100%;
+	display: flex;
+
+	flex-direction: column;
+	--grey-text: #505b66;
+}
+
+.closeButton {
+	position: absolute;
+	right: 50px;
+	top: 140px;
+	background-color: transparent;
+	border: unset;
+	cursor: pointer;
+}
+.header {
+	display: flex;
+	padding: 1rem;
+	align-items: center;
+	position: fixed;
+	background-color: white;
+	width: calc(100% - 190px);
+	/* full width for dynamic container */
+	box-shadow: 1px 0px 6px #999;
+	z-index: 1;
+}
+.header img {
+	width: 100px;
+}
+.header a {
+	text-decoration: none;
+	color: var(--grey-text);
+	cursor: pointer;
+	padding: 15px 0;
+	font-weight: 600;
+	margin: 0 10px;
+	font-size: 14px;
+}
+.noPaddingMargin {
+	text-decoration: none;
+	color: var(--grey-text);
+	cursor: pointer;
+	padding: unset !important;
+	font-weight: 400;
+	margin: unset !important;
+	font-size: 14px;
+}
+nav {
+	margin-left: 40px;
+	display: flex;
+	width: 100%;
+}
+.header a:hover {
+	color: #afcb08 !important;
+}
+#startseite {
+	font-size: 15px !important;
+	font-weight: 600 !important;
+	color: #afcb08 !important;
+}
+.mainContainer {
+	background-color: #f0f0f1;
+	padding-bottom: 5rem;
+	margin-top: 95px;
+}
+.topText {
+	border: #afcb08 solid 2px;
+	margin: 2rem;
+	padding: 2rem;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+.leftText ul li::before {
+	content: attr(data-icon);
+	margin-right: 0.7rem;
+	color: #afcb08;
+	/* Make slightly larger than the li font-size
+	but smaller than the li gap */
+	font-size: 1.3em;
+}
+.rightButton a {
+	color: #afcb08;
+	text-decoration: none;
+}
+.rightButton button {
+	color: #fff;
+	background-color: #afcb08;
+	padding: 0.25rem 1rem;
+	font-size: 0.875rem;
+	line-height: 1.75;
+	border-radius: 0.25rem;
+	display: inline-block;
+	font-family: 'Gilroy', sans-serif;
+	font-weight: 700;
+
+	text-align: center;
+	vertical-align: middle;
+	border: unset;
+	padding-top: 6px;
+	padding-bottom: 6px;
+}
+.rightButton button:hover {
+	background: #517b7b;
+	box-shadow: 0 0.5rem 1rem rgba(23, 27, 31, 0.15);
+	cursor: pointer;
+}
+.overview {
+	width: 50%;
+}
+.servicesContainer {
+	margin-left: 2rem;
+	height: 91%;
+	min-height: 340px;
+	background: #fff;
+	padding: 20px 20px;
+	border-radius: 5px;
+}
+.servicesRow {
+	margin-bottom: 16px;
+	display: flex;
+	justify-content: space-between;
+}
+.servicesRow a {
+	width: 48.5%;
+	display: flex;
+	justify-content: space-between;
+	text-decoration: none;
+}
+.servicesCard {
+	display: flex;
+	align-items: center;
+	padding: 20px 15px;
+	border: 1px solid #d7e1f2;
+	border-radius: 6px;
+	width: 100%;
+	cursor: pointer;
+}
+.servicesCard:hover h3 {
+	color: #afcb08;
+}
+.serviceIcon {
+	width: 40px;
+}
+.servicesContainer h3 {
+	margin-left: 1rem;
+}
+.bottomContainer {
+	display: flex;
+	padding-top: 2rem;
+}
+.settingsForm {
+	background-color: white;
+
+	margin: 2rem;
+	margin-top: 0 !important;
+	padding-top: 0 !important;
+	margin-bottom: 0 !important;
+	padding-bottom: 0 !important;
+	padding: 2rem;
+	border-radius: 5px;
+
+	width: 50%;
+}
+.settingsForm input,
+.settingsForm label {
+	margin-bottom: 0.5rem;
+}
+.settingsForm input {
+	width: 60ch !important;
+}
+.urlHeader {
+	display: flex;
+}
+.statusText {
+	margin-left: auto;
+	margin-right: 1rem;
+}
+@media only screen and (max-width: 1278px) {
+	.servicesCard {
+		width: fit-content;
+	}
+}
+@media only screen and (max-width: 960px) {
+	.header {
+		width: 95% !important;
+	}
+}

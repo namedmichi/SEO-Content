@@ -1,0 +1,20 @@
+{
+	"titlePrompt": "Verfasse einen Titel für einen Artikel über  {topic}  . Stil:  {stil} .  Sollte zwischen 40 und 60 Zeichen lang sein.",
+	"ueberschriftenPrompt": "Schreibe {ueberschriftenAnzahl} aufeinanderfolgende Überschriften für einen Artikel über {title} . Stil: {stil}   Jede Überschrift ist zwischen 40 und 60 Zeichen lang. Benutze h2 tags für die Überschriften. Schreibe genau {ueberschriftenAnzahl} überschriften ",
+	"inhaltPrompt": "'Verfasse einen Artikel über {title} . Stil: {stil} .  Der Artikel hat die folgenden h2 Überschriften: {ueberschriften}. Schreibe genau {absaetzeAnzahl} Absätze pro Überschrift. Optimiere den Text auf folgende Keywords: {keywords}. Fange mit einer Überschrift an und benutze h2 tags. Schreibe genau {woerter} Wörter pro Absatz'",
+	"excerpPrompt": "'Schreibe eine Metabeschreibung über den Titel {title} . Style: {stil}.  Muss zwischen 40 und 60 Zeichen lang sein. Schreibe nur die genannte anzahl an Absätzen';",
+	"keywordPrompt": "Keyword {i}: {keyword} (Beschreibung: {beschreibung}, Synonyme: {Synonyme} ), {anzahl} mal im text mit folgender Reigenfolge: {reihenfolge} ",
+	"unternehmensInfoPrompt": "Füge folgende Unternehmensinformationen in den Text ein: Adresse: {adresse}, Gewerbe: {Gewerbe}, Firmenname: {firmenname}, Warum wir: {warumWir}",
+	"faqPrompt": "'Erstelle 5 Fragen und Antworten zum Thema {faqThema} . Schreibe in diesen Format: Frage: Content \n Antwort: Content; ... ;   ",
+	"answerPrompt": "Erstelle eine Antwort för die Frage: {frage} ",
+	"newTitlePrompt": "Erstelle einen neuen Titel für den Titel: {title}.Stil:  {stil} .  Antworte nur auf den Prompt. Erklär dich nicht. Schreibe keine Anrede oder Höflichkeiten.",
+	"newMetaPrompt": "Erstelle eine neue Meta-Beschreibung für den Titel: {title}  und Metabeschreibung: {meta}. Benutze folgende Sonderzeichen sinnvoll im Text: {sonderzeichen} .  Stil:  {stil}. Benutze folgende USP´s wenn angegeben: {usps}. Benutze folgende Call to Action Sätze: {ctas}  Antworte nur auf den Prompt. Erklär dich nicht. Schreibe keine Anrede oder Höflichkeiten.",
+	"aiBlockPrompt": "'Erstelle einen Text über das thema:  {thema};",
+	"toolbarCorrect": "' Korrigiere folgenden text auf Grammatik und Rechtsschreib Fehler: {content} ",
+	"toolbarReadability": "' Machen Folgenden Text lesbarer: {content} ",
+	"toolbarLonger": " Verlängere folgenden Text: {content}",
+	"toolbarShorter": "' Verkürze folgenden Text: {content} ",
+	"toolbarRewrite": "' Schreibe folgenden Text in neuen Worten: {content} ",
+	"toolbarKeyword": " Optimiere diesen Text:  {content}  auf das Keyword: {keyword} Schreibe es mindesten  {anzahl}  mal in den Text. ",
+	"toolbarTranslate": "Übersetze folgenden Text: {content} auf die Sprache: {sprache} "
+}

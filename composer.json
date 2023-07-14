@@ -1,0 +1,10 @@
+{
+	"name": "namedmichi/seocontent",
+	"type": "wordpress-plugin",
+	"autoload": {
+		"psr-4": {
+			"Namedmichi\\TestPlugin\\": "src/"
+		}
+	},
+	"require": {}
+}

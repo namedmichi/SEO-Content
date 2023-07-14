@@ -1,0 +1,24 @@
+{
+	"name": "seocontent",
+	"version": "1.0.0",
+	"description": "=== Plugin Name === Contributors: (this should be a list of wordpress.org userid's) Tags: comments, spam Requires at least: 3.0.1 Tested up to: 3.4 Stable tag: 4.3 License: GPLv2 or later License URI: http://www.gnu.org/licenses/gpl-2.0.html",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"build": "wp-scripts build",
+		"start": "wp-scripts start"
+	},
+	"author": "namedmichi",
+	"license": "ISC",
+	"devDependencies": {
+		"@wordpress/scripts": "^26.4.0",
+		"chai": "^4.3.7",
+		"mocha": "^10.2.0"
+	},
+	"dependencies": {
+		"@wordpress/api-fetch": "^6.31.0",
+		"@wordpress/icons": "^9.24.0",
+		"axios": "^1.4.0",
+		"react-modal": "^3.16.1"
+	}
+}

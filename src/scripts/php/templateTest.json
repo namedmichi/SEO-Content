@@ -1,0 +1,28 @@
+{
+    "Unterordner1": {
+        "Unterordner1": {
+            "Neuer test": [
+                "Anfangsprompts",
+                "Verfasse einen Titel f\u00fcr einen Artikel \u00fcber  {topic}  . Stil:  {stil} .  Sollte zwischen 40 und 60 Zeichen lang sein.",
+                "Schreibe {ueberschriftenAnzahl} aufeinanderfolgende \u00dcberschriften f\u00fcr einen Artikel \u00fcber {title} . Stil: {stil}   Jede \u00dcberschrift ist zwischen 40 und 60 Zeichen lang. Benutze h2 tags f\u00fcr die \u00dcberschriften. Schreibe genau {ueberschriftenAnzahl} \u00fcberschriften ",
+                "\\'Verfasse einen Artikel \u00fcber {title} . Stil: {stil} .  Der Artikel hat die folgenden h2 \u00dcberschriften: {ueberschriften}. Schreibe genau {absaetzeAnzahl} Abs\u00e4tze pro \u00dcberschrift. Optimiere den Text auf folgende Keywords: {keywords}. Fange mit einer \u00dcberschrift an und benutze h2 tags. Schreibe genau {woerter} W\u00f6rter pro Absatz\\'",
+                "\\'Schreibe eine Metabeschreibung \u00fcber den Titel {title} . Style: {stil}.  Muss zwischen 40 und 60 Zeichen lang sein. Schreibe nur die genannte anzahl an Abs\u00e4tzen\\';",
+                "",
+                "",
+                "page"
+            ]
+        },
+        "Unterordner2": {
+            "Neuer test": [
+                "Anfangsprompts",
+                "Verfasse einen Titel f\u00fcr einen Artikel \u00fcber  {topic}  . Stil:  {stil} .  Sollte zwischen 40 und 60 Zeichen lang sein.",
+                "Schreibe {ueberschriftenAnzahl} aufeinanderfolgende \u00dcberschriften f\u00fcr einen Artikel \u00fcber {title} . Stil: {stil}   Jede \u00dcberschrift ist zwischen 40 und 60 Zeichen lang. Benutze h2 tags f\u00fcr die \u00dcberschriften. Schreibe genau {ueberschriftenAnzahl} \u00fcberschriften ",
+                "\\\\\\'Verfasse einen Artikel \u00fcber {title} . Stil: {stil} .  Der Artikel hat die folgenden h2 \u00dcberschriften: {ueberschriften}. Schreibe genau {absaetzeAnzahl} Abs\u00e4tze pro \u00dcberschrift. Optimiere den Text auf folgende Keywords: {keywords}. Fange mit einer \u00dcberschrift an und benutze h2 tags. Schreibe genau {woerter} W\u00f6rter pro Absatz\\\\\\'",
+                "\\\\\\'Schreibe eine Metabeschreibung \u00fcber den Titel {title} . Style: {stil}.  Muss zwischen 40 und 60 Zeichen lang sein. Schreibe nur die genannte anzahl an Abs\u00e4tzen\\\\\\';",
+                "",
+                "",
+                "page"
+            ]
+        }
+    }
+}
