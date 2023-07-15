@@ -16,7 +16,7 @@
  * Plugin Name:       SEO Content
  * Plugin URI:        https://www.seo-kueche.de
  * Description:       KI-gestütztes Plugin zur automatisierten Erstellung von SEO-konformen Inhalten und Meta-Daten.
- * Version:           1.0.1
+ * Version:           1.0.2
  * Author:            SEO Küche
  * Author URI:        https://www.seo-kueche.de
  * License:           GPL-2.0+
@@ -46,7 +46,7 @@ require_once __DIR__ . '/src/scripts/php/create_image_page.php';
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define('SEOContent_VERSION', '1.0.1');
+define('SEOContent_VERSION', '1.0.2');
 
 
 /**
@@ -74,7 +74,116 @@ register_deactivation_hook(__FILE__, 'deactivate_SEOContent');
 
 
 
+function create_script_table()
+{
+	global $wpdb;
+	$charset_collate = $wpdb->get_charset_collate();
+	$table_name = $wpdb->prefix . 'seocontent_faqs';
 
+	$sql = "CREATE TABLE $table_name (
+        id mediumint(9) NOT NULL AUTO_INCREMENT,
+        page_id mediumint(9) NOT NULL,
+        script_content text NOT NULL,
+        PRIMARY KEY  (id)
+    ) $charset_collate;";
+
+	require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+	dbDelta($sql);
+}
+
+
+register_activation_hook(__FILE__, 'check_and_create_table');
+
+//Creates the table for the FAQ when activating the plugin if it doesn't exist
+function check_and_create_table()
+{
+	global $wpdb;
+	$table_name = $wpdb->prefix . 'seocontent_faqs';
+
+	if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
+		// Table not in database. Create new table.
+		create_script_table();
+	}
+}
+
+
+
+
+
+// Adds the FAQ from "Text erstellen" into the footer
+
+function insert_page_script()
+{
+	if (is_page() || is_single()) {
+		global $post;
+		global $wpdb;
+
+		$table_name = $wpdb->prefix . 'seocontent_faqs';
+		$result = $wpdb->get_row("SELECT * FROM $table_name WHERE page_id = $post->ID");
+
+		if ($result) {
+			echo '<script type="application/ld+json">' . $result->script_content . '</script>';
+		}
+	}
+}
+
+// Hook the function into wp_footer
+add_action('wp_footer', 'insert_page_script');
+
+
+
+
+
+register_activation_hook(__FILE__, 'check_and_create_seo_table');
+
+//Creates the table for the meta description when activating the plugin if it doesn't exist
+function check_and_create_seo_table()
+{
+	global $wpdb;
+	$table_name = $wpdb->prefix . 'seocontent_metas';
+
+	if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
+		// Table not in database. Create new table.
+		create_seo_table();
+	}
+}
+
+//Creates the table for the meta description
+function create_seo_table()
+{
+	global $wpdb;
+	$charset_collate = $wpdb->get_charset_collate();
+	$table_name = $wpdb->prefix . 'seocontent_metas';
+
+	$sql = "CREATE TABLE $table_name (
+        id mediumint(9) NOT NULL AUTO_INCREMENT,
+        page_id mediumint(9) NOT NULL,
+        meta_description text NOT NULL,
+        PRIMARY KEY  (id)
+    ) $charset_collate;";
+
+	require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+	dbDelta($sql);
+}
+
+// Adds the meta description into the header
+function insert_page_meta_description()
+{
+	if (is_page() || is_single()) {
+		global $post;
+		global $wpdb;
+
+		$table_name = $wpdb->prefix . 'seocontent_metas';
+		$result = $wpdb->get_row("SELECT * FROM $table_name WHERE page_id = $post->ID");
+
+		if ($result) {
+			echo '<meta id="seocontent" name="description" content="' . esc_attr($result->meta_description) . '">';
+		}
+	}
+}
+
+// Hook the function into wp_head
+add_action('wp_head', 'insert_page_meta_description');
 
 
 

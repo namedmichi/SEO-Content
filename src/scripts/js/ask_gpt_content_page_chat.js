@@ -666,7 +666,10 @@ function generateMarkup() {
 	for (var i = 0; i < questionInputs.length; i++) {
 		var question = questionInputs[i].value;
 		var answer = answerInputs[i].value;
+
 		if (question && answer) {
+			question = question.replace(/"/g, "'");
+			answer = answer.replace(/"/g, "'");
 			faqs.push({
 				'@type': 'Question',
 				name: question,

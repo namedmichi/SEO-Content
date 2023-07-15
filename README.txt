@@ -1,9 +1,10 @@
 === SEOContent ===
-Contributors: (this should be a list of wordpress.org userid's)
+Contributors: michaelselbertinger
 Tags: SEO, KI, Optimierung, Automatisierung, Erstellung
 Requires at least: 5.0
 Tested up to: 6.2
-Stable tag: 1.0.1
+Stable tag: 1.0.2
+Requires PHP: 7.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 

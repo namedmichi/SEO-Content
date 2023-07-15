@@ -49,7 +49,7 @@ function gpt_create_post()
 
 
         $id = wp_insert_post($wordpress_post);
-
+        save_page_meta_description($id, $excerpt);
         echo $id;
     } catch (\Throwable $th) {
         echo $th;
@@ -73,6 +73,24 @@ function gpt_create_post()
         //throw $th;
     }
 }
+
+
+function save_page_meta_description($page_id, $meta_description)
+{
+    // Perform database operations to save the meta description for a specific page.
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'seocontent_metas';
+
+    $wpdb->insert(
+        $table_name,
+        array(
+            'page_id' => $page_id,
+            'meta_description' => $meta_description
+        )
+    );
+}
+
+
 /*
  *  Fügt ein Script Tag mit dem JSON-LD Code in die Seite ein
  */
@@ -92,20 +110,32 @@ function gpt_add_script_to_post()
     $postId = isset($_POST['response']) ? wp_kses_post($_POST['response']) : '';
     $faqOutput = isset($_POST['faq']) ? wp_kses_post($_POST['faq']) : '';
 
-    $page = get_post($postId);
-    $content = $page->post_content;
-
-    // Check if the post is a page
-    if ($page->post_type === 'page') {
-        // Append the script tag to the post content
-        $script = '<script type="application/ld+json">'  . $faqOutput . ' </script> ';
-
-        $content .= $script;
-        $page->post_content = $content;
-        wp_update_post($page);
-    }
+    save_page_script($postId, $faqOutput);
     wp_die();
 }
+
+
+function save_page_script($page_id, $script_content)
+{
+    $script_content = str_replace('\\', '', $script_content);
+    echo $script_content;
+    // Perform database operations to save the script tag content for a specific page.
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'seocontent_faqs';
+    echo $table_name;
+    $wpdb->insert(
+        $table_name,
+        array(
+            'page_id' => $page_id,
+            'script_content' => $script_content
+        )
+    );
+    echo $wpdb->get_row("SELECT * FROM $table_name WHERE page_id = $page_id");
+    wp_die();
+}
+
+
+
 /*
  *  Löscht einen Prompt aus dem Prompttemplates
  */
@@ -385,6 +415,18 @@ function get_main_settings()
     echo $jsonString;
     wp_die();
 }
+function update_page_meta_description($page_id, $new_meta_description)
+{
+    // Perform database operations to update the meta description for a specific page.
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'seocontent_metas';
+
+    $wpdb->update(
+        $table_name,
+        array('meta_description' => $new_meta_description), // new values
+        array('page_id' => $page_id) // where clause
+    );
+}
 /*
  * Aktualisiert die Meta Daten einer Seite
  */
@@ -413,7 +455,7 @@ function update_meta_page()
         'post_title' => $newTitle,
         'post_excerpt' => $newExcerpt,
     );
-
+    update_page_meta_description($pageId, $newExcerpt);
     // Update the page
     $result = wp_update_post($pageData);
 

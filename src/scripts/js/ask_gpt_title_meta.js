@@ -143,6 +143,7 @@ async function getInfos(type) {
 
 var sonderzeichen = '';
 var alreadyPrintet = 0;
+
 async function generateNewSnippets() {
 	var stil = document.getElementById('nmd_style').value;
 	var metas = document.getElementsByClassName('metaShorted');
@@ -157,6 +158,7 @@ async function generateNewSnippets() {
 		alreadyPrintet++;
 	}
 }
+var asyncCoounter = 0;
 async function generateNewSnippetsSubFunction(stil, trueI, i, element, element2) {
 	let title = titlesArray[i];
 	let meta = exceptArray[i];
@@ -167,7 +169,6 @@ async function generateNewSnippetsSubFunction(stil, trueI, i, element, element2)
 
 	// Get the new title from GPT.
 	let newTitle = await askGpt(prompt, 60);
-	newTitlesArray.push(newTitle);
 
 	let ctas = settingsArray['cta'];
 	let usps = settingsArray['usps'];
@@ -186,13 +187,24 @@ async function generateNewSnippetsSubFunction(stil, trueI, i, element, element2)
 
 	// Get the new meta description from GPT.
 	let newMeta = await askGpt(prompt, 160);
-	newExceptArray.push(newMeta);
 
 	// Add the new snippet to the page.
-	addNewBlock(newTitle, newMeta, idArray[i], i);
+	await addNewBlock(newTitle, newMeta, idArray[i], i);
+	asyncCoounter++;
 	shortenText();
 	element.style.animation = 'none';
 	element2.style.animation = 'none';
+	if (asyncCoounter == titlesArray.length - 1) {
+		await new Promise((r) => setTimeout(r, 1500));
+		var newTitles = document.getElementsByClassName('newTitle');
+		var newMetas = document.getElementsByClassName('newMeta');
+		newTitlesArray = [];
+		newExceptArray = [];
+		for (let i = 0; i < titlesArray.length; i++) {
+			newTitlesArray.push(newTitles[i].innerHTML);
+			newExceptArray.push(newMetas[i].innerHTML);
+		}
+	}
 }
 
 var blockCount = 0;
