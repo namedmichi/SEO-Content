@@ -392,7 +392,7 @@ add_action('wp_ajax_nopriv_update_meta_page', 'update_meta_page');
  */
 function save_main_settings()
 {
-    $path = ABSPATH . 'wp-content/plugins/SEOContent/src/scripts/php\settings.json';
+    $path = ABSPATH . 'wp-content/plugins/SEOContent/src/scripts/php/settings.json';
     $apiKey = isset($_POST['apiKey']) ? $_POST['apiKey'] : '';
     $firmenname = isset($_POST['firmenname']) ? $_POST['firmenname'] : '';
     $adresse = isset($_POST['adresse']) ? $_POST['adresse'] : '';
