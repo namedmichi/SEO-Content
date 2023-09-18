@@ -3882,6 +3882,17 @@ module.exports = window["wp"]["blockEditor"];
 
 /***/ }),
 
+/***/ "@wordpress/blocks":
+/*!********************************!*\
+  !*** external ["wp","blocks"] ***!
+  \********************************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = window["wp"]["blocks"];
+
+/***/ }),
+
 /***/ "@wordpress/components":
 /*!************************************!*\
   !*** external ["wp","components"] ***!
@@ -8098,8 +8109,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
 /* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _src_components_toolbar_button__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../src/components/toolbar_button */ "./src/components/toolbar_button.jsx");
-/* harmony import */ var _src_components_ai_block__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../src/components/ai_block */ "./src/components/ai_block.jsx");
-/* harmony import */ var _style_main_scss__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./style/main.scss */ "./src/style/main.scss");
+/* harmony import */ var _wordpress_blocks__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @wordpress/blocks */ "@wordpress/blocks");
+/* harmony import */ var _wordpress_blocks__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_wordpress_blocks__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var _src_components_ai_block__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../src/components/ai_block */ "./src/components/ai_block.jsx");
+/* harmony import */ var _style_main_scss__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./style/main.scss */ "./src/style/main.scss");
+
+
 
 
 

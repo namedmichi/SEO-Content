@@ -3,7 +3,9 @@ import { render } from '@wordpress/element';
 import { addFilter } from '@wordpress/hooks';
 import { __ } from '@wordpress/i18n';
 import Download from '../src/components/toolbar_button';
+import { registerBlockType } from '@wordpress/blocks';
 import ai_block from '../src/components/ai_block';
+
 /**
  * Import the stylesheet for the plugin.
  */

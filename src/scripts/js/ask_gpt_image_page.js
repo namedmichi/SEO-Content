@@ -5,6 +5,9 @@ function create_image() {
 	document.getElementsByTagName('html')[0].style.paddingTop = '0';
 	count = document.getElementById('count').value;
 	image_prompt = document.getElementById('nmd_image_prompt').value;
+	if (count == '') {
+		count = 1;
+	}
 	console.log(count);
 	for (let index = 1; index <= count; index++) {
 		jQuery(document).ready(function ($) {

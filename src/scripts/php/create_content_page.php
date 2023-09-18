@@ -608,34 +608,37 @@ function nmd_create_content_callback()
                         </div>
                         <div id="keywordContainer" style="display: none;">
                             <div id="keywordsAddContainer">
-                                <label for="keyword">Keyword:</label>
-                                <br>
-                                <input name="keyword" id="keyword" type="text">
-                                <br>
-                                <label for="keywordAnzahl">Vorkommen im Text:</label>
-                                <br>
-                                <input type="number" name="keywordAnzahl" id="keywordAnzahl" style="width: 8ch;">
-                                <br>
-                                <label for="keywordWhere">Vorkommen in:</label>
-                                <p>Überschrift inkl. Absätze</p>
-                                <label class="keywordWhereId1" for="1">1</label>
-                                <input type="checkbox" name="1" class="keywordWhereId1 keywordWhereId1Value" id="1" value="1">
-                                <label class="keywordWhereId2" for="2">2</label>
-                                <input type="checkbox" name="2" class="keywordWhereId2 keywordWhereId2Value" id="2" value="2">
-                                <label class="keywordWhereId3" for="3">3</label>
-                                <input type="checkbox" name="3" class="keywordWhereId3 keywordWhereId3Value" id="3" value="3">
-                                <br>
-                                <br>
-                                <label for="synonym">Synonyme(optional):</label>
-                                <br>
-                                <input name="synonym" id="synonym" type="text" placeholder="Synonym1, Synonym2, ...">
-                                <br>
-                                <label for="beschreibung">Beschreibung(Optional):</label>
-                                <br>
-                                <input type="text" name="beschreibung" id="beschreibung">
-                                <br>
+                                <div class="keywordDiv">
+                                    <label for="keyword">Keyword:</label>
+                                    <br>
+                                    <input name="keyword" id="keyword" type="text">
+                                    <br>
+                                    <label for="keywordAnzahl">Vorkommen im Text:</label>
+                                    <br>
+                                    <input type="number" name="keywordAnzahl" id="keywordAnzahl" style="width: 8ch;">
+                                    <br>
+                                    <label for="keywordWhere">Vorkommen in:</label>
+                                    <p>Überschrift inkl. Absätze</p>
+                                    <label class="keywordWhereId1" for="1">1</label>
+                                    <input type="checkbox" name="1" class="keywordWhereId1 keywordWhereId1Value" id="1" value="1">
+                                    <label class="keywordWhereId2" for="2">2</label>
+                                    <input type="checkbox" name="2" class="keywordWhereId2 keywordWhereId2Value" id="2" value="2">
+                                    <label class="keywordWhereId3" for="3">3</label>
+                                    <input type="checkbox" name="3" class="keywordWhereId3 keywordWhereId3Value" id="3" value="3">
+                                    <br>
+                                    <br>
+                                    <label for="synonym">Synonyme(optional):</label>
+                                    <br>
+                                    <input name="synonym" id="synonym" type="text" placeholder="Synonym1, Synonym2, ...">
+                                    <br>
+                                    <label for="beschreibung">Beschreibung(Optional):</label>
+                                    <br>
+                                    <input type="text" name="beschreibung" id="beschreibung">
+                                    <br>
+                                </div>
                             </div>
                             <button class="button button-primary" type="button" onclick="addKeyword()">+ Weiteres Keyword hinzufügen</button>
+                            <button class="button button-primary" style="background-color: #e42a2a;border-color: #e42a2a; width: 50%" type="button" onclick="removeKeyword()">- Keyword Entfernen</button>
                         </div>
                     </div>
 

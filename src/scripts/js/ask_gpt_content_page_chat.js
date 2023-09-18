@@ -470,8 +470,8 @@ function ask_gpt_content_page_excerp() {
 
 	askGpt(prompt, 100)
 		.then((result) => {
-			document.getElementById('nmd_excerp_input').innerHTML = result;
-			document.getElementById('nmd_excerp_input').value = result;
+			document.getElementById('nmd_excerp_input').innerHTML = result.replace(/^"(.*)"$/, '$1');
+			document.getElementById('nmd_excerp_input').value = result.replace(/^"(.*)"$/, '$1');
 			document.getElementById('overlay').style.display = 'none';
 			document.body.classList.remove('blurred');
 			document.body.classList.remove('no-scroll');
@@ -797,6 +797,15 @@ function addKeyword() {
 		' <br> <br><label for="synonym">Synonyme(optional):</label><br><input name="synonym" id="synonym" type="text" placeholder="Synonym1, Synonym2, ...">' +
 		'<br><label for="beschreibung">Beschreibung(Optional):</label><br><input type="text" name="beschreibung" id="beschreibung"><br>';
 	document.getElementById('keywordsAddContainer').appendChild(div);
+}
+let firstRemoveTempBool = true;
+function removeKeyword() {
+	var div = document.getElementById('keywordsAddContainer');
+	div.removeChild(div.lastChild);
+	if (firstRemoveTempBool) {
+		firstRemoveTempBool = false;
+		div.removeChild(div.lastChild);
+	}
 }
 function getKeywordsLocation() {
 	var ones = '';

@@ -41,7 +41,7 @@
 .keywordDiv {
 	padding: 8px;
 }
-.keywordDiv:nth-child(odd) {
+.keywordDiv:nth-child(even) {
 	background-color: #b4b4b4;
 	margin-left: -7px;
 	margin-right: -7px;
