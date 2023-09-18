@@ -29,18 +29,21 @@ function saveSettings() {
 		});
 	});
 }
+function getHomeUrl() {
+	var href = window.location.href;
+	var index = href.indexOf('/wp-admin');
+	var homeUrl = href.substring(0, index);
+	return homeUrl;
+}
+var homeUrl = getHomeUrl();
 
 function getSettings() {
 	jQuery(document).ready(function ($) {
-		$.ajax({
-			url: myAjax.ajaxurl,
-			method: 'POST',
-			data: {
-				action: 'get_main_settings',
-			},
-			success: function (response) {
-				console.log(response);
-				const prompts = JSON.parse(response);
+		fetch(homeUrl + '/wp-content/plugins/SEOContent/src/scripts/php/settings.json')
+			.then((response) => response.json())
+			.then((json) => {
+				console.log(json);
+				const prompts = json;
 				document.getElementById('apiKey').value = prompts.apiKey;
 				document.getElementById('firmenname').value = prompts.firmenname;
 				document.getElementById('adresse').value = prompts.adresse;
@@ -48,11 +51,7 @@ function getSettings() {
 				document.getElementById('whyUs').value = prompts.warumWir;
 				document.getElementById('usps').value = prompts.usps;
 				document.getElementById('cta').value = prompts.cta;
-			},
-			error: function (error) {
-				console.log(error);
-			},
-		});
+			});
 	});
 }
 
