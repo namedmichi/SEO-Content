@@ -123,7 +123,7 @@ function add_image()
     $files = isset($_POST['image_urls']) ? $_POST['image_urls'] : '';
     $count = isset($_POST['count']) ? $_POST['count'] : '';
     $title = isset($_POST['title']) ? $_POST['title'] : '';
-    echo $files;
+
     if (!class_exists('WP_Http')) {
         include_once(ABSPATH . WPINC . '/class-http.php');
     }
@@ -241,9 +241,23 @@ function nmd_create_image_callback()
 
                     </div>
                     <div class="bilder">
-                        <div class="fakeImage"><img id="nmd_image_1" alt=""></div>
-                        <div class="fakeImage"><img id="nmd_image_2" alt=""></div>
-                        <div class="fakeImage"><img id="nmd_image_3" alt=""></div>
+                        <div class="imageFlexContainer">
+
+                            <div class="fakeImage"><img id="nmd_image_1" alt=""></div>
+                            <input type="checkbox" name="selectImage" id="selectImage">
+                        </div>
+                        <div class="imageFlexContainer">
+
+                            <div class="fakeImage"><img id="nmd_image_2" alt=""></div>
+                            <input type="checkbox" name="selectImage" id="selectImage">
+
+                        </div>
+                        <div class="imageFlexContainer">
+
+                            <div class="fakeImage"><img id="nmd_image_3" alt=""></div>
+                            <input type="checkbox" name="selectImage" id="selectImage">
+
+                        </div>
                     </div>
 
                 </div>

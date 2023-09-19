@@ -9,7 +9,9 @@ function create_image() {
 		count = 1;
 	}
 	console.log(count);
+	let checkboxes = document.getElementsByName('selectImage');
 	for (let index = 1; index <= count; index++) {
+		checkboxes[index - 1].checked = true;
 		jQuery(document).ready(function ($) {
 			$.ajax({
 				url: myAjax.ajaxurl,
@@ -48,10 +50,27 @@ function add_image() {
 	document.body.classList.add('no-scroll');
 	document.getElementsByTagName('html')[0].style.paddingTop = '0';
 	count = document.getElementById('count').value;
+	let checkboxes = document.getElementsByName('selectImage');
+	for (let index = 0; index <= count; index++) {
+		if (checkboxes[index].checked == false) {
+			count--;
+		}
+	}
+	if (count == 0) {
+		document.getElementById('overlay').style.display = 'none';
+		document.body.classList.remove('blurred');
+		document.body.classList.remove('no-scroll');
+		document.getElementsByTagName('html')[0].style.paddingTop = '32px';
+		return;
+	}
 	var image_urls = ['', '', ''];
 	var title = document.getElementById('nmd_image_prompt').value;
-	for (let index = 1; index <= count; index++) {
-		image_urls[index - 1] = document.getElementById('nmd_image_' + index).src;
+	let tempI = 0;
+	for (let index = 0; index <= count; index++) {
+		if (checkboxes[index].checked == true) {
+			image_urls[tempI] = document.getElementById('nmd_image_' + (index + 1)).src;
+			tempI++;
+		}
 	}
 	console.log(image_urls);
 	jQuery(document).ready(function ($) {
