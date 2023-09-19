@@ -331,6 +331,8 @@ function ask_gpt_content_page() {
 	prompt = prompt.replace('{stil}', stil);
 	prompt = prompt.replace('{ton}', ton);
 
+	prompt = setKeywords(prompt);
+
 	askGpt(prompt, 100).then((result) => {
 		document.getElementById('nmd_title_input').innerHTML = result.replace(/^"(.*)"$/, '$1');
 		document.getElementById('nmd_title_input').value = result.replace(/^"(.*)"$/, '$1');
@@ -346,6 +348,8 @@ function ask_gpt_content_page_title() {
 	prompt = prompt.replace('{ton}', ton);
 	prompt = prompt.replace('{ueberschriftenAnzahl}', abschnitte);
 	prompt = prompt.replace('{ueberschriftenAnzahl}', abschnitte);
+
+	prompt = setKeywords(prompt);
 
 	askGpt(prompt, 27 * abschnitte).then((result) => {
 		document.getElementById('nmd_abschnitte_input').innerHTML = result;
@@ -366,14 +370,7 @@ function ask_gpt_content_page_ueberschriften() {
 	prompt = prompt.replace('{absaetzeAnzahl}', inhaltCount);
 	prompt = prompt.replace('{woerter}', words);
 	var includeInfos = document.getElementById('includeInfos').checked;
-	var keywordList = document.getElementsByName('keyword');
-	var keywordAnzahlList = document.getElementsByName('keywordAnzahl');
-	var beschreibungList = document.getElementsByName('beschreibung');
-	var synonymList = document.getElementsByName('synonym');
-	var keywordInputs = [];
-	var keywordAnzahlInputs = [];
-	var beschreibungInputs = [];
-	var synonymInputs = [];
+
 	if (includeInfos) {
 		var address = settingsArray['adresse'];
 		var Gewerbe = settingsArray['Gewerbe'];
@@ -385,6 +382,59 @@ function ask_gpt_content_page_ueberschriften() {
 		prompt = prompt.replace('{firmenname}', firmenname);
 		prompt = prompt.replace('{warumWir}', warumWir);
 	}
+
+	prompt = setKeywords(prompt);
+
+	tokens = tokens * abschnitte * inhaltCount;
+	askGpt(prompt, tokens).then((result) => {
+		document.getElementById('nmd_inhalt_input').innerHTML = result;
+		document.getElementById('nmd_inhalt_input').value = result;
+		ask_gpt_content_page_excerp();
+	});
+}
+
+function ask_gpt_content_page_excerp() {
+	setValues();
+
+	var prompt = document.getElementById('excerp_prompt').value;
+	prompt = prompt.replace('{title}', title);
+	prompt = prompt.replace('{stil}', stil);
+	prompt = prompt.replace('{ton}', ton);
+
+	prompt = setKeywords(prompt);
+
+	askGpt(prompt, 100)
+		.then((result) => {
+			document.getElementById('nmd_excerp_input').innerHTML = result.replace(/^"(.*)"$/, '$1');
+			document.getElementById('nmd_excerp_input').value = result.replace(/^"(.*)"$/, '$1');
+			document.getElementById('overlay').style.display = 'none';
+			document.body.classList.remove('blurred');
+			document.body.classList.remove('no-scroll');
+			document.getElementsByTagName('html')[0].style.paddingTop = '32px';
+			chat = [
+				{
+					role: 'system',
+					content:
+						'You are a helpful assistant speaking German. You are a creativ Textwriter that helps with SEO and Text optimization. Complete my Promts:',
+				},
+			];
+		})
+		.catch((error) => {
+			document.getElementById('overlay').style.display = 'none';
+			document.body.classList.remove('blurred');
+			document.body.classList.remove('no-scroll');
+		});
+}
+function setKeywords(prompt) {
+	var keywordList = document.getElementsByName('keyword');
+	var keywordAnzahlList = document.getElementsByName('keywordAnzahl');
+	var beschreibungList = document.getElementsByName('beschreibung');
+	var synonymList = document.getElementsByName('synonym');
+	var keywordInputs = [];
+	var keywordAnzahlInputs = [];
+	var beschreibungInputs = [];
+	var synonymInputs = [];
+
 	for (var i = 0; i < keywordList.length; i++) {
 		keywordInputs.push(keywordList[i].value);
 		keywordAnzahlInputs.push(keywordAnzahlList[i].value);
@@ -451,46 +501,8 @@ function ask_gpt_content_page_ueberschriften() {
 		keywordStringFinal += tempPrompt;
 	}
 	prompt = prompt.replace('{keywords}', keywordStringFinal);
-
-	tokens = tokens * abschnitte * inhaltCount;
-	askGpt(prompt, tokens).then((result) => {
-		document.getElementById('nmd_inhalt_input').innerHTML = result;
-		document.getElementById('nmd_inhalt_input').value = result;
-		ask_gpt_content_page_excerp();
-	});
+	return prompt;
 }
-
-function ask_gpt_content_page_excerp() {
-	setValues();
-
-	var prompt = document.getElementById('excerp_prompt').value;
-	prompt = prompt.replace('{title}', title);
-	prompt = prompt.replace('{stil}', stil);
-	prompt = prompt.replace('{ton}', ton);
-
-	askGpt(prompt, 100)
-		.then((result) => {
-			document.getElementById('nmd_excerp_input').innerHTML = result.replace(/^"(.*)"$/, '$1');
-			document.getElementById('nmd_excerp_input').value = result.replace(/^"(.*)"$/, '$1');
-			document.getElementById('overlay').style.display = 'none';
-			document.body.classList.remove('blurred');
-			document.body.classList.remove('no-scroll');
-			document.getElementsByTagName('html')[0].style.paddingTop = '32px';
-			chat = [
-				{
-					role: 'system',
-					content:
-						'You are a helpful assistant speaking German. You are a creativ Textwriter that helps with SEO and Text optimization. Complete my Promts:',
-				},
-			];
-		})
-		.catch((error) => {
-			document.getElementById('overlay').style.display = 'none';
-			document.body.classList.remove('blurred');
-			document.body.classList.remove('no-scroll');
-		});
-}
-
 function setValues() {
 	document.getElementsByTagName('html')[0].style.paddingTop = '0';
 	document.body.classList.add('no-scroll');
