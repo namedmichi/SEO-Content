@@ -3,7 +3,7 @@
 	"ueberschriftenPrompt": "Schreibe {ueberschriftenAnzahl} aufeinanderfolgende Überschriften für einen Artikel über {title} . Stil: {stil}. Optimiere den Text auf folgende Keywords: {keywords}.   Jede Überschrift ist zwischen 40 und 60 Zeichen lang. Benutze h2 tags für die Überschriften. Schreibe genau {ueberschriftenAnzahl} überschriften ",
 	"inhaltPrompt": "'Verfasse einen Artikel über {title} . Stil: {stil} .  Der Artikel hat die folgenden h2 Überschriften: {ueberschriften}. Schreibe genau {absaetzeAnzahl} Absätze pro Überschrift. Optimiere den Text auf folgende Keywords: {keywords}. Fange mit einer Überschrift an und benutze h2 tags. Schreibe genau {woerter} Wörter pro Absatz'",
 	"excerpPrompt": "'Schreibe eine Metabeschreibung über den Titel {title} . Style: {stil}. Optimiere den Text auf folgende Keywords: {keywords}.  Muss zwischen 40 und 60 Zeichen lang sein. Schreibe nur die genannte anzahl an Absätzen';",
-	"keywordPrompt": "Keyword {i}: {keyword} (Beschreibung: {beschreibung}, Synonyme: {Synonyme} ), {anzahl} mal im text mit folgender Reigenfolge: {reihenfolge} ",
+	"keywordPrompt": "Keyword {i}: {keyword} (Beschreibung: {beschreibung}, Synonyme: {Synonyme} ),  muss in den fogenden Überschriften vorkommen: {reihenfolge}, muss insgesamt {anzahl} mal in den zur dieser Überschrift gehörenden Absätzen vorkommen.",
 	"unternehmensInfoPrompt": "Füge folgende Unternehmensinformationen in den Text ein: Adresse: {adresse}, Gewerbe: {Gewerbe}, Firmenname: {firmenname}, Warum wir: {warumWir}",
 	"faqPrompt": "'Erstelle 5 Fragen und Antworten zum Thema {faqThema} . Schreibe in diesen Format: Frage: Content \n Antwort: Content; ... ;   ",
 	"answerPrompt": "Erstelle eine Antwort för die Frage: {frage} ",
