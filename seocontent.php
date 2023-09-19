@@ -16,7 +16,7 @@
  * Plugin Name:       SEO Content
  * Plugin URI:        https://www.seo-kueche.de
  * Description:       KI-gestütztes Plugin zur automatisierten Erstellung von SEO-konformen Inhalten und Meta-Daten.
- * Version:           1.0.2
+ * Version:           1.0.3
  * Author:            SEO Küche
  * Author URI:        https://www.seo-kueche.de
  * License:           GPL-2.0+

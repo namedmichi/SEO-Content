@@ -10,13 +10,7 @@ var inhaltCount;
 var var_prompt = '';
 var promptList;
 
-var chat = [
-	{
-		role: 'system',
-		content:
-			'You are a helpful assistant speaking German. You are a creativ Textwriter that helps with SEO and Text optimization. Complete my Promts:',
-	},
-];
+var chat;
 
 function getHomeUrl() {
 	var href = window.location.href;
@@ -40,6 +34,12 @@ request.onreadystatechange = function () {
 
 		// Use the jsonData variable as needed
 		console.log(jsonData);
+		chat = [
+			{
+				role: 'system',
+				content: promptList['systemRole'],
+			},
+		];
 	}
 };
 
@@ -278,15 +278,13 @@ function editFolder(folder) {
 
 async function askGpt(prompt, tokens) {
 	console.log('Prompt: ' + prompt);
-	tokens = tokens * 1.5;
-	tokens = Math.round(tokens);
 	chat.push({ role: 'user', content: prompt });
 	try {
 		const response = await axios.post(
 			API_ENDPOINT,
 			{
 				messages: chat,
-				max_tokens: tokens,
+
 				temperature: 0.6,
 				model: 'gpt-4',
 				n: 1,
@@ -414,8 +412,7 @@ function ask_gpt_content_page_excerp() {
 			chat = [
 				{
 					role: 'system',
-					content:
-						'You are a helpful assistant speaking German. You are a creativ Textwriter that helps with SEO and Text optimization. Complete my Promts:',
+					content: promptList['systemRole'],
 				},
 			];
 		})
@@ -532,6 +529,11 @@ function create_content_page() {
 	var answerInputs = document.getElementsByName('answer');
 	var typ = document.getElementById('nmd_typ_select').value;
 	var faqBool = false;
+
+	if (document.getElementById('includeShortcode').checked) {
+		console.log('includeShortcode');
+		inhalt += '<!-- wp:shortcode --> \n ' + settingsArray['shortcode'] + '\n	<!-- /wp:shortcode -->';
+	}
 
 	if (document.getElementById('question').value !== '') {
 		faqBool = true;

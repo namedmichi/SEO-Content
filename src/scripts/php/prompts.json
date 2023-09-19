@@ -16,5 +16,6 @@
 	"toolbarShorter": "' Verkürze folgenden Text: {content} ",
 	"toolbarRewrite": "' Schreibe folgenden Text in neuen Worten: {content} ",
 	"toolbarKeyword": " Optimiere diesen Text:  {content}  auf das Keyword: {keyword} Schreibe es mindesten  {anzahl}  mal in den Text. ",
-	"toolbarTranslate": "Übersetze folgenden Text: {content} auf die Sprache: {sprache} "
+	"toolbarTranslate": "Übersetze folgenden Text: {content} auf die Sprache: {sprache} ",
+	"systemRole": "You are a helpful assistant speaking German. You are a creativ Textwriter that helps with SEO and Text optimization. Complete my Promts:"
 }

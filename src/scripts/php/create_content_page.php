@@ -400,7 +400,8 @@ function save_main_settings()
     $whyUs = isset($_POST['whyUs']) ? $_POST['whyUs'] : '';
     $usps = isset($_POST['usps']) ? $_POST['usps'] : '';
     $cta = isset($_POST['cta']) ? $_POST['cta'] : '';
-    $settingsArray = array('apiKey' => $apiKey, 'firmenname' => $firmenname, 'adresse' => $adresse, 'Gewerbe' => $Gewerbe, 'warumWir' => $whyUs, 'usps' => $usps, 'cta' => $cta);
+    $shortcode = isset($_POST['shortcode']) ? $_POST['shortcode'] : '';
+    $settingsArray = array('apiKey' => $apiKey, 'firmenname' => $firmenname, 'adresse' => $adresse, 'Gewerbe' => $Gewerbe, 'warumWir' => $whyUs, 'usps' => $usps, 'cta' => $cta, 'shortcode' => $shortcode);
     $jsonData = json_encode($settingsArray, JSON_PRETTY_PRINT);
     file_put_contents($path, $jsonData);
     wp_die();
@@ -898,10 +899,18 @@ function nmd_create_content_callback()
                                         Der Hauptinhalt bildet den Kern Ihrer Seite und hat einen großen Einfluss auf den Erfolg Ihrer Zielseiten in Suchmaschinen. Nutzen Sie den Keyword-Optimierer, um festzulegen, welche Neben-Keywords Sie innerhalb der Teilüberschriften und Absätze behandeln möchten. Tipps zur optimalen Arbeit mit dem Keyword-Optimierer finden Sie in unserer Anleitung unter dem Menüpunkt „Hilfe und Anleitung“. </div>
                                 </div>
                             </div>
-                            <div style="display: flex; align-items:center">
-                                <label for="includeInfos" style="font-size: 1rem;">Unternehmensinformationen verwenden</label>
-                                &nbsp;
-                                <input type="checkbox" name="includeInfos" id="includeInfos" style="width: 16px">
+                            <div style="display: flex;  flex-direction: column;">
+                                <div>
+                                    <label for="includeInfos" style="font-size: 1rem;">Unternehmensinformationen verwenden</label>
+                                    &nbsp;
+                                    <input type="checkbox" name="includeInfos" id="includeInfos" style="width: 16px">
+                                </div>
+                                <br>
+                                <div>
+                                    <label for="includeShortcode" style="font-size: 1rem;">Kontaktformular einfügen</label>
+                                    &nbsp;
+                                    <input type="checkbox" name="includeShortcode" id="includeShortcode" style="width: 16px">
+                                </div>
 
                             </div>
                             <br>

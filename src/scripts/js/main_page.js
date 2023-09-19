@@ -6,6 +6,7 @@ function saveSettings() {
 	var whyUs = document.getElementById('whyUs').value;
 	var usps = document.getElementById('usps').value;
 	var cta = document.getElementById('cta').value;
+	var shortcode = document.getElementById('shortcode').value;
 	jQuery(document).ready(function ($) {
 		$.ajax({
 			url: myAjax.ajaxurl,
@@ -19,6 +20,7 @@ function saveSettings() {
 				whyUs: whyUs,
 				usps: usps,
 				cta: cta,
+				shortcode: shortcode,
 			},
 			success: function (response) {
 				console.log(response);
