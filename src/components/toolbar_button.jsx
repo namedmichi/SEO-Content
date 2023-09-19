@@ -9,9 +9,6 @@ import Modal from 'react-modal';
 import axios from 'axios';
 const Download = (BlockEdit) => {
 	return (props) => {
-		if (props.name !== 'core/paragraph') {
-			return <BlockEdit {...props} />;
-		}
 		console.log(props);
 		const [modalIsOpen, setIsOpen] = React.useState(false);
 		function openModal() {
@@ -210,302 +207,65 @@ const Download = (BlockEdit) => {
 addFilter('editor.BlockEdit', 'Nmd_Form', Download);
 
 async function gpt_toolbar(content, selection, props) {
-	var promptList;
-	var settingsArray;
-	const request2 = new XMLHttpRequest();
-	var jsonUrl = homeUrl + '/wp-content/plugins/SEOContent/src/scripts/php/settings.json'; // Replace with the actual URL of your JSON file
-	var apiKey = '';
-	request2.open('GET', jsonUrl, true);
-	request2.onreadystatechange = function () {
-		if (request2.readyState === 4 && request2.status === 200) {
-			// Parse the JSON response
-			const json = JSON.parse(request2.responseText);
+	await set_global_settings();
 
-			// Save the JSON data to a variable
-			const jsonData = json;
-			settingsArray = jsonData;
-			apiKey = settingsArray['apiKey'];
-			// Use the jsonData variable as needed
-			console.log(jsonData);
-		}
-	};
-
-	request2.send();
-	var href = window.location.href;
-	var index = href.indexOf('/wp-admin');
-	var homeUrl = href.substring(0, index);
-
-	const request = new XMLHttpRequest();
-	var jsonUrl = homeUrl + '/wp-content/plugins/SEOContent/src/scripts/php/prompts.json'; // Replace with the actual URL of your JSON file
-
-	request.open('GET', jsonUrl, true);
-	request.onreadystatechange = function () {
-		if (request.readyState === 4 && request.status === 200) {
-			// Parse the JSON response
-			const json = JSON.parse(request.responseText);
-
-			// Save the JSON data to a variable
-			const jsonData = json;
-			promptList = jsonData;
-
-			// Use the jsonData variable as needed
-			console.log(jsonData);
-		}
-	};
-
-	request.send();
-	document.getElementById('block-' + props.clientId).style.animation = '1.3s linear 0s infinite normal none running nmd-fading';
-	await new Promise((resolve) => setTimeout(resolve, 5000));
-
-	console.log('fetching');
-	console.log('block-' + props.clientId);
-	var result;
-	const model = 'text-davinci-003';
-
-	const url = 'https://api.openai.com/v1/engines/' + model + '/completions';
-	var tokens;
 	if (selection == 'correct') {
-		tokens = Math.floor(content.length / 2);
 		var prompt = promptList['toolbarCorrect'];
 		prompt = prompt.replace('{content}', content);
 	}
 	if (selection == 'readability') {
-		tokens = Math.floor(content.length / 2);
 		var prompt = promptList['toolbarReadability'];
 		prompt = prompt.replace('{content}', content);
 	}
 	if (selection == 'longer') {
-		tokens = Math.floor(content.length / 2) + 150;
 		var prompt = promptList['toolbarLonger'];
 		prompt = prompt.replace('{content}', content);
 	}
 	if (selection == 'shorter') {
-		tokens = Math.floor(content.length / 2) - 150;
 		var prompt = promptList['toolbarShorter'];
 		prompt = prompt.replace('{content}', content);
 	}
 	if (selection == 'rewrite') {
-		tokens = Math.floor(content.length / 2);
 		var prompt = promptList['toolbarRewrite'];
 		prompt = prompt.replace('{content}', content);
 	}
 	if (selection == 'keyword') {
 	}
-	const API_ENDPOINT = 'https://api.openai.com/v1/chat/completions';
-	var chat = [
-		{
-			role: 'system',
-			content:
-				'You are a helpful assistant speaking German. You are a creativ Textwriter that helps with SEO and Text optimization. Complete my Promts. Dont say anything else except the answer to my Prompt',
-		},
-	];
 
-	chat.push({ role: 'user', content: prompt });
-	try {
-		const response = await axios.post(
-			API_ENDPOINT,
-			{
-				messages: chat,
-				max_tokens: tokens,
-				temperature: 0.6,
-				model: 'gpt-4',
-				n: 1,
-			},
-			{
-				headers: {
-					'Content-Type': 'application/json',
-					Authorization: `Bearer ${apiKey}`,
-				},
-			}
-		);
-
-		if (response.status === 200) {
-			const { choices } = response.data;
-			if (choices && choices.length > 0) {
-				console.log(choices);
-				const { message } = choices[0];
-				const { content } = message;
-				console.log(content);
-				var blockId = select('core/block-editor').getSelectedBlock().clientId;
-				console.log('BLock	ID: ' + blockId);
-
-				select('core/block-editor').getSelectedBlock().attributes.content = content.trim().replace('"', '');
-
-				var updatedAttributes = select('core/block-editor').getSelectedBlock().attributes;
-
-				dispatch('core/block-editor').updateBlock(blockId, updatedAttributes);
-				document.getElementById('block-' + props.clientId).style.animation = '';
-				console.log(updatedAttributes);
-				return 'test';
-				return content.trim();
-			}
-		}
-
-		throw new Error('Chat completion request failed.');
-	} catch (error) {
-		console.error('Error:', error.message);
-		alert(
-			'Es ist ein Fehler aufgetreten. Bitte warten Sie ein paar Sekunden und versuchen es dan erneut. Bei weiteren Probleme kontaktieren Sie bitte den Support'
-		);
-		throw error;
-	}
-
-	var x = await fetch(url, {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-			Authorization: 'Bearer ' + apiKey,
-		},
-		body: JSON.stringify({
-			prompt: prompt,
-			max_tokens: 200,
-		}),
-	})
-		.then((response) => response.json())
-		.then((data) => (result = data.choices[0].text))
-		.then((data) => console.log(result))
-		.then((data) => {
-			console.log(result);
-			console.log(select('core/block-editor').getSelectedBlock());
-			var blockId = select('core/block-editor').getSelectedBlock().clientId;
-			console.log('BLock	ID: ' + blockId);
-
-			select('core/block-editor').getSelectedBlock().attributes.content = result;
-
-			var updatedAttributes = select('core/block-editor').getSelectedBlock().attributes;
-
-			dispatch('core/block-editor').updateBlock(blockId, updatedAttributes);
-			document.getElementById('block-' + props.clientId).style.animation = '';
-			console.log(updatedAttributes);
-			return 'test';
-		})
-		.catch((error) => console.error(error));
+	await gpt_make_request(content, props, prompt);
 }
 
 async function gpt_toolbar_keyword(content, props, keyword, count) {
-	var settingsArray = '';
-	console.log('fetching');
-	console.log('block-' + props.clientId);
-	document.getElementById('block-' + props.clientId).style.animation = '1.3s linear 0s infinite normal none running nmd-fading';
-
-	var promptList;
-
-	var href = window.location.href;
-	var index = href.indexOf('/wp-admin');
-	var homeUrl = href.substring(0, index);
-
-	const request = new XMLHttpRequest();
-	var jsonUrl = homeUrl + '/wp-content/plugins/SEOContent/src/scripts/php/prompts.json'; // Replace with the actual URL of your JSON file
-
-	request.open('GET', jsonUrl, true);
-	request.onreadystatechange = function () {
-		if (request.readyState === 4 && request.status === 200) {
-			// Parse the JSON response
-			const json = JSON.parse(request.responseText);
-
-			// Save the JSON data to a variable
-			const jsonData = json;
-			promptList = jsonData;
-
-			// Use the jsonData variable as needed
-			console.log(jsonData);
-		}
-	};
-
-	request.send();
-	const request2 = new XMLHttpRequest();
-	var jsonUrl = homeUrl + '/wp-content/plugins/SEOContent/src/scripts/php/settings.json'; // Replace with the actual URL of your JSON file
-	var apiKey = '';
-	request2.open('GET', jsonUrl, true);
-	request2.onreadystatechange = function () {
-		if (request2.readyState === 4 && request2.status === 200) {
-			// Parse the JSON response
-			const json = JSON.parse(request2.responseText);
-
-			// Save the JSON data to a variable
-			const jsonData = json;
-			settingsArray = jsonData;
-			apiKey = settingsArray['apiKey'];
-			// Use the jsonData variable as needed
-			console.log(jsonData);
-		}
-	};
-
-	request2.send();
-	await new Promise((resolve) => setTimeout(resolve, 5000));
+	await set_global_settings();
 
 	var prompt = promptList['toolbarKeyword'];
 	prompt = prompt.replace('{content}', content);
 	prompt = prompt.replace('{keyword}', keyword);
 	prompt = prompt.replace('{anzahl}', count);
 
-	const API_ENDPOINT = 'https://api.openai.com/v1/chat/completions';
-	var chat = [
-		{
-			role: 'system',
-			content:
-				'You are a helpful assistant speaking German. You are a creativ Textwriter that helps with SEO and Text optimization. Complete my Promts:',
-		},
-	];
-
-	chat.push({ role: 'user', content: prompt });
-	try {
-		const response = await axios.post(
-			API_ENDPOINT,
-			{
-				messages: chat,
-				max_tokens: Math.floor(content.length / 2),
-				temperature: 0.6,
-				model: 'gpt-4',
-				n: 1,
-			},
-			{
-				headers: {
-					'Content-Type': 'application/json',
-					Authorization: `Bearer ${apiKey}`,
-				},
-			}
-		);
-
-		if (response.status === 200) {
-			const { choices } = response.data;
-			if (choices && choices.length > 0) {
-				console.log(choices);
-				const { message } = choices[0];
-				const { content } = message;
-				console.log(content);
-				var blockId = select('core/block-editor').getSelectedBlock().clientId;
-				console.log('BLock	ID: ' + blockId);
-
-				select('core/block-editor').getSelectedBlock().attributes.content = content.trim();
-
-				var updatedAttributes = select('core/block-editor').getSelectedBlock().attributes;
-
-				dispatch('core/block-editor').updateBlock(blockId, updatedAttributes);
-				document.getElementById('block-' + props.clientId).style.animation = '';
-				console.log(updatedAttributes);
-				return 'test';
-				return content.trim();
-			}
-		}
-
-		throw new Error('Chat completion request failed.');
-	} catch (error) {
-		console.error('Error:', error.message);
-		alert(
-			'Es ist ein Fehler aufgetreten. Bitte warten Sie ein paar Sekunden und versuchen es dan erneut. Bei weiteren Probleme kontaktieren Sie bitte den Support'
-		);
-		throw error;
-	}
+	await gpt_make_request(content, props, prompt);
 }
 async function gpt_language_keyword(content, props, sprache) {
-	var href = window.location.href;
-	var index = href.indexOf('/wp-admin');
-	var homeUrl = href.substring(0, index);
-	var settingsArray = '';
+	await set_global_settings();
+
+	var prompt = promptList['toolbarTranslate'];
+	prompt = prompt.replace('{content}', content);
+	prompt = prompt.replace('{sprache}', sprache);
+
+	await gpt_make_request(content, props, prompt);
+}
+
+let apiKey = '';
+let href = window.location.href;
+let index = href.indexOf('/wp-admin');
+let homeUrl = href.substring(0, index);
+var settingsArray = '';
+let promptList = '';
+let settingsSet = false;
+async function set_global_settings() {
+	console.log('settingsSet');
 	const request2 = new XMLHttpRequest();
 	var jsonUrl = homeUrl + '/wp-content/plugins/SEOContent/src/scripts/php/settings.json'; // Replace with the actual URL of your JSON file
-	var apiKey = '';
 	request2.open('GET', jsonUrl, true);
 	request2.onreadystatechange = function () {
 		if (request2.readyState === 4 && request2.status === 200) {
@@ -520,14 +280,7 @@ async function gpt_language_keyword(content, props, sprache) {
 			console.log(jsonData);
 		}
 	};
-
 	request2.send();
-	console.log('fetching');
-	console.log('block-' + props.clientId);
-	document.getElementById('block-' + props.clientId).style.animation = '1.3s linear 0s infinite normal none running nmd-fading';
-
-	var promptList;
-
 	const request = new XMLHttpRequest();
 	var jsonUrl = homeUrl + '/wp-content/plugins/SEOContent/src/scripts/php/prompts.json'; // Replace with the actual URL of your JSON file
 
@@ -547,17 +300,33 @@ async function gpt_language_keyword(content, props, sprache) {
 	};
 
 	request.send();
-	await new Promise((resolve) => setTimeout(resolve, 5000));
-
-	var prompt = promptList['toolbarTranslate'];
-	prompt = prompt.replace('{content}', content);
-	prompt = prompt.replace('{sprache}', sprache);
+	await new Promise((resolve) => setTimeout(resolve, 100));
+	settingsSet = true;
+}
+async function test_content(content, props) {
+	if (content == undefined) {
+		try {
+			content = props.attributes.text;
+			if (content == undefined) {
+				alert('Es konnte kein Text gefunden werden. Bitte wählen Sie einen anderen Block aus oder wenden Sie sich an den Support');
+				return;
+			}
+		} catch {
+			alert('Es konnte kein Text gefunden werden. Bitte wählen Sie einen anderen Block aus oder wenden Sie sich an den Support');
+			return;
+		}
+	}
+	document.getElementById('block-' + props.clientId).style.animation = '1.3s linear 0s infinite normal none running nmd-fading';
+	return content;
+}
+async function gpt_make_request(content, props, prompt) {
+	content = test_content(content, props);
 
 	const API_ENDPOINT = 'https://api.openai.com/v1/chat/completions';
 	var chat = [
 		{
 			role: 'system',
-			content: 'Complete my Promts:',
+			content: promptList['systemRoleZauberstab'],
 		},
 	];
 
@@ -567,7 +336,6 @@ async function gpt_language_keyword(content, props, sprache) {
 			API_ENDPOINT,
 			{
 				messages: chat,
-				max_tokens: Math.floor(content.length * 1.4),
 				temperature: 0.6,
 				model: 'gpt-4',
 				n: 1,
@@ -587,12 +355,16 @@ async function gpt_language_keyword(content, props, sprache) {
 				const { message } = choices[0];
 				const { content } = message;
 				console.log(content);
-				var blockId = select('core/block-editor').getSelectedBlock().clientId;
+				var blockId = props.clientId;
 				console.log('BLock	ID: ' + blockId);
 
-				select('core/block-editor').getSelectedBlock().attributes.content = content.trim();
+				if (select('core/block-editor').getBlock(blockId).attributes.content != undefined) {
+					select('core/block-editor').getBlock(blockId).attributes.content = content.trim().replace(/^"(.*)"$/, '$1');
+				} else {
+					select('core/block-editor').getBlock(blockId).attributes.text = content.trim().replace(/^"(.*)"$/, '$1');
+				}
 
-				var updatedAttributes = select('core/block-editor').getSelectedBlock().attributes;
+				var updatedAttributes = select('core/block-editor').getBlock(blockId).attributes;
 
 				dispatch('core/block-editor').updateBlock(blockId, updatedAttributes);
 				document.getElementById('block-' + props.clientId).style.animation = '';

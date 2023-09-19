@@ -12,10 +12,12 @@
 	"aiBlockPrompt": "'Erstelle einen Text über das thema:  {thema};",
 	"toolbarCorrect": "' Korrigiere folgenden text auf Grammatik und Rechtsschreib Fehler: {content} ",
 	"toolbarReadability": "' Machen Folgenden Text lesbarer: {content} ",
-	"toolbarLonger": " Verlängere folgenden Text: {content}",
+	"toolbarLonger": " Verlängere folgenden Text um 30%: {content}",
 	"toolbarShorter": "' Verkürze folgenden Text: {content} ",
 	"toolbarRewrite": "' Schreibe folgenden Text in neuen Worten: {content} ",
 	"toolbarKeyword": " Optimiere diesen Text:  {content}  auf das Keyword: {keyword} Schreibe es mindesten  {anzahl}  mal in den Text. ",
 	"toolbarTranslate": "Übersetze folgenden Text: {content} auf die Sprache: {sprache} ",
-	"systemRole": "You are a helpful assistant speaking German. You are a creativ Textwriter that helps with SEO and Text optimization. Complete my Promts:"
+	"systemRole": "You are a helpful assistant speaking German. You are a creativ Textwriter that helps with SEO and Text optimization. Complete my Promts:",
+	"systemRoleZauberstab": "You are a helpful assistant speaking German. You are a creativ Textwriter that helps with SEO and Text optimization. Complete my Promts:",
+	"systemRoleAiBlock": "You are a helpful assistant speaking German. You are a creativ Textwriter that helps with SEO and Text optimization. Complete my Promts:"
 }

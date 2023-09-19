@@ -74,6 +74,9 @@ textarea {
 	justify-content: space-between;
 	padding-bottom: 10px;
 }
+.mitte textarea {
+	resize: vertical !important;
+}
 .links {
 }
 .rechts {
