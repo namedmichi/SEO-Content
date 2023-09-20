@@ -899,13 +899,13 @@ function nmd_create_content_callback()
                                 </div>
                             </div>
                             <div style="display: flex;  flex-direction: column;">
-                                <div>
+                                <div class="checkboxDiv">
                                     <label for="includeInfos" style="font-size: 1rem;">Unternehmensinformationen verwenden</label>
                                     &nbsp;
                                     <input type="checkbox" name="includeInfos" id="includeInfos" style="width: 16px">
                                 </div>
-                                <br>
-                                <div>
+
+                                <div class="checkboxDiv">
                                     <label for="includeShortcode" style="font-size: 1rem;">Kontaktformular einfügen</label>
                                     &nbsp;
                                     <input type="checkbox" name="includeShortcode" id="includeShortcode" style="width: 16px">

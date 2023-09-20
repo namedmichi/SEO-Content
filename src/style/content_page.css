@@ -104,7 +104,10 @@ textarea {
 	display: flex;
 	width: 100%;
 }
-
+.checkboxDiv {
+	display: flex;
+	align-items: center;
+}
 .template {
 	display: flex;
 	flex-direction: column;
