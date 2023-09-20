@@ -24,6 +24,7 @@ function saveSettings() {
 			},
 			success: function (response) {
 				console.log(response);
+				updateSettingsOption();
 			},
 			error: function (error) {
 				console.log(error);
@@ -60,5 +61,21 @@ function getSettings() {
 function closePopup() {
 	setCookie('popup', 'closed', 7);
 	document.getElementById('topText').style.display = 'none';
+}
+async function updateSettingsOption() {
+	jQuery.ajax({
+		url: myAjax.ajaxurl,
+		type: 'POST',
+		data: {
+			action: 'update_seocontent_settings_action',
+		},
+		success: async function (response) {
+			console.log('SEO-Content-Einstellungen wurden aktualisiert.');
+		},
+		error: function (error) {
+			console.error('Fehler beim Aktualisieren der SEO-Content-Einstellungen: ' + error.responseText);
+		},
+	});
+	await new Promise((r) => setTimeout(r, 1000));
 }
 getSettings();

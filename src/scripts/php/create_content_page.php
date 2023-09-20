@@ -483,17 +483,16 @@ function nmd_create_content_callback()
 {
     do_action('scriptTest');
 
-    $path = content_url() . '/plugins/SEOContent/src/scripts/php/templates.json';
+
     $testPath = content_url() . '/plugins/SEOContent/src/scripts/php/templateTest.json';
     $promptPath = content_url() . '/plugins/SEOContent/src/scripts/php/prompts.json';
     try {
 
-        $jsonString = file_get_contents($path);
-        $prompts = json_decode($jsonString, true);
+
         $jsonString = file_get_contents($promptPath);
         $hardPrompts = json_decode($jsonString, true);
         $jsonString = file_get_contents($testPath);
-        $testTemplates = json_decode($jsonString, true);
+        $testTemplates = get_option('seocontent_templates');
     } catch (Exception $e) {
     }
 

@@ -126,9 +126,9 @@ function save_template() {
 				subFolder: folderArray[0],
 				folder: folderArray[1],
 			},
-			success: function (response) {
+			success: async function (response) {
 				console.log(response);
-
+				await updateTemplateOption();
 				location.reload();
 			},
 			error: function (error) {
@@ -155,8 +155,9 @@ function delete_template(folder, subFolder, index) {
 				index: index,
 				typ: 'prompt',
 			},
-			success: function (response) {
+			success: async function (response) {
 				console.log(response);
+				await updateTemplateOption();
 				location.reload();
 			},
 			error: function (error) {
@@ -181,8 +182,9 @@ function delete_template_subFolder(folder, subFolder) {
 				subFolder: subFolder,
 				typ: 'sub',
 			},
-			success: function (response) {
+			success: async function (response) {
 				console.log(response);
+				await updateTemplateOption();
 				location.reload();
 			},
 			error: function (error) {
@@ -206,8 +208,9 @@ function delete_template_Folder(folder) {
 				folder: folder,
 				typ: 'folder',
 			},
-			success: function (response) {
+			success: async function (response) {
 				console.log(response);
+				await updateTemplateOption();
 				location.reload();
 			},
 			error: function (error) {
@@ -227,8 +230,9 @@ function createFolder() {
 				action: 'create_folder',
 				name: name,
 			},
-			success: function (response) {
+			success: async function (response) {
 				console.log(response);
+				await updateTemplateOption();
 				location.reload();
 			},
 		});
@@ -246,8 +250,9 @@ function createSubFolder() {
 				name: name,
 				subName: subName,
 			},
-			success: function (response) {
+			success: async function (response) {
 				console.log(response);
+				await updateTemplateOption();
 				location.reload();
 			},
 		});
@@ -268,12 +273,30 @@ function editFolder(folder) {
 				folder: folder,
 				newName: newName,
 			},
-			success: function (response) {
+			success: async function (response) {
 				console.log(response);
+				await updateTemplateOption();
 				location.reload();
 			},
 		});
 	});
+}
+
+async function updateTemplateOption() {
+	jQuery.ajax({
+		url: myAjax.ajaxurl,
+		type: 'POST',
+		data: {
+			action: 'update_seocontent_templates_action',
+		},
+		success: async function (response) {
+			console.log('SEO-Content-Einstellungen wurden aktualisiert.');
+		},
+		error: function (error) {
+			console.error('Fehler beim Aktualisieren der SEO-Content-Einstellungen: ' + error.responseText);
+		},
+	});
+	await new Promise((r) => setTimeout(r, 1000));
 }
 
 async function askGpt(prompt, tokens) {

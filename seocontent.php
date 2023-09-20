@@ -107,8 +107,137 @@ function check_and_create_table()
 }
 
 
+register_activation_hook(__FILE__, 'set_settings_option');
+
+function set_settings_option()
+{
+	// Überprüfen, ob die Option bereits existiert
+	$json_file_path = plugin_dir_path(__FILE__) . 'src/scripts/php/settings.json';
+	if (!get_option('seocontent_settings')) {
+		// Die Option existiert nicht, daher erstellen wir sie aus einer JSON-Datei
+
+		// Pfad zur JSON-Datei in deinem Plugin-Verzeichnis
+
+		// Lese den Inhalt der JSON-Datei
+		$json_data = file_get_contents($json_file_path);
+
+		// Konvertiere JSON in ein PHP-Array
+		$settings = json_decode($json_data, true);
+
+		// Füge die Option "seocontent_settings" mit den JSON-Daten hinzu
+		add_option('seocontent_settings', $settings);
+	} else {
+		// Die Option existiert, lade die Option und speichere sie in der JSON-Datei
+
+		$seocontent_settings = get_option('seocontent_settings');
+
+		// Konvertiere die Option in JSON-Format
+		$json_data = json_encode($seocontent_settings, JSON_PRETTY_PRINT);
+
+		// Speichere die JSON-Daten in der Datei
+		file_put_contents($json_file_path, $json_data);
+	}
+}
 
 
+register_activation_hook(__FILE__, 'set_template_option');
+
+
+function set_template_option()
+{
+	// Überprüfen, ob die Option bereits existiert
+	$json_file_path = plugin_dir_path(__FILE__) . 'src/scripts/php/templateTest.json';
+	if (!get_option('seocontent_templates')) {
+		// Die Option existiert nicht, daher erstellen wir sie aus einer JSON-Datei
+
+		// Pfad zur JSON-Datei in deinem Plugin-Verzeichnis
+
+		// Lese den Inhalt der JSON-Datei
+		$json_data = file_get_contents($json_file_path);
+
+		// Konvertiere JSON in ein PHP-Array
+		$settings = json_decode($json_data, true);
+
+		// Füge die Option "seocontent_settings" mit den JSON-Daten hinzu
+		add_option('seocontent_templates', $settings);
+	} else {
+		// Die Option existiert, lade die Option und speichere sie in der JSON-Datei
+
+		$seocontent_templates = get_option('seocontent_templates');
+
+		// Konvertiere die Option in JSON-Format
+		$json_data = json_encode($seocontent_templates, JSON_PRETTY_PRINT);
+
+		// Speichere die JSON-Daten in der Datei
+		file_put_contents($json_file_path, $json_data);
+	}
+}
+
+// Definiere eine benutzerdefinierte Hook
+function update_seocontent_settings()
+{
+	// Pfad zur JSON-Datei in deinem Plugin-Verzeichnis
+	$json_file_path = plugin_dir_path(__FILE__) . 'src/scripts/php/settings.json';
+
+	// Lese den Inhalt der JSON-Datei
+	$json_data = file_get_contents($json_file_path);
+
+	// Konvertiere JSON in ein PHP-Array
+	$settings = json_decode($json_data, true);
+
+	// Aktualisiere die Option "seocontent_settings" mit den neuen JSON-Daten
+	update_option('seocontent_settings', $settings);
+}
+
+// Füge deine benutzerdefinierte Hook zu WordPress hinzu
+add_action('update_seocontent_settings_hook', 'update_seocontent_settings');
+
+
+
+// Definiere eine benutzerdefinierte Hook
+function update_seocontent_template()
+{
+	// Pfad zur JSON-Datei in deinem Plugin-Verzeichnis
+	$json_file_path = plugin_dir_path(__FILE__) . 'src/scripts/php/templateTest.json';
+
+	// Lese den Inhalt der JSON-Datei
+	$json_data = file_get_contents($json_file_path);
+
+	// Konvertiere JSON in ein PHP-Array
+	$settings = json_decode($json_data, true);
+
+	// Aktualisiere die Option "seocontent_settings" mit den neuen JSON-Daten
+	update_option('seocontent_templates', $settings);
+}
+
+// Füge deine benutzerdefinierte Hook zu WordPress hinzu
+add_action('update_seocontent_templates_hook', 'update_seocontent_template');
+
+
+
+
+add_action('wp_ajax_update_seocontent_settings_action', 'update_seocontent_settings_action');
+add_action('wp_ajax_nopriv_update_seocontent_settings_action', 'update_seocontent_settings_action'); // Für nicht angemeldete Benutzer
+
+function update_seocontent_settings_action()
+{
+	// Führe die benutzerdefinierte Hook aus
+	do_action('update_seocontent_settings_hook');
+
+	wp_die(); // Beende die AJAX-Anfrage
+}
+
+
+add_action('wp_ajax_update_seocontent_templates_action', 'update_seocontent_templates_action');
+add_action('wp_ajax_nopriv_update_seocontent_templates_action', 'update_seocontent_templates_action'); // Für nicht angemeldete Benutzer
+
+function update_seocontent_templates_action()
+{
+	// Führe die benutzerdefinierte Hook aus
+	do_action('update_seocontent_templates_hook');
+
+	wp_die(); // Beende die AJAX-Anfrage
+}
 
 // Adds the FAQ from "Text erstellen" into the footer
 
