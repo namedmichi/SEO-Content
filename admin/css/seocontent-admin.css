@@ -126,17 +126,19 @@ nav {
 }
 .servicesContainer {
 	margin-left: 2rem;
-	height: 91%;
+	height: 100%;
 	min-height: 340px;
 	background: #fff;
-	padding: 20px 20px;
+	padding: 0px 20px 0px 20px;
 	border-radius: 5px;
-	padding-bottom: 45px;
 }
 .servicesRow {
 	margin-bottom: 16px;
 	display: flex;
 	justify-content: space-between;
+}
+.servicesRow:first-of-type {
+	padding-top: 20px;
 }
 .servicesRow a {
 	width: 48.5%;
@@ -184,7 +186,7 @@ nav {
 	margin-bottom: 0.5rem;
 }
 .settingsForm input {
-	width: 60ch !important;
+	width: 60ch;
 }
 .urlHeader {
 	display: flex;
@@ -202,4 +204,92 @@ nav {
 	.header {
 		width: 95% !important;
 	}
+}
+.settingsTab {
+	display: flex;
+	flex-direction: column;
+	width: fit-content;
+}
+.tabs {
+	display: flex;
+	flex-direction: row;
+}
+.tabHeader {
+	cursor: pointer;
+}
+.activeTab {
+	color: #afcb08;
+}
+.variable {
+	display: flex;
+	flex-direction: row;
+	align-items: first baseline;
+}
+.variableSpan {
+	font-size: 1.3rem;
+	font-weight: bolder;
+}
+.variable .variableInput {
+	width: auto !important;
+}
+.variable .variableInputWert {
+	width: 18dvw !important;
+}
+.exportButton {
+	color: #fff !important;
+	background-color: #afcb08;
+	padding: 0.25rem 1rem;
+	font-size: 0.875rem;
+	line-height: 1.75;
+	border-radius: 0.25rem;
+	display: inline-block;
+	font-family: 'Gilroy', sans-serif;
+	font-weight: 700;
+	text-align: center;
+	vertical-align: middle;
+	border: unset;
+	padding-top: 6px;
+	padding-bottom: 6px;
+	margin-right: 8px;
+}
+.exportButton:hover {
+	background: #517b7b;
+	box-shadow: 0 0.5rem 1rem rgba(23, 27, 31, 0.15);
+	cursor: pointer;
+}
+.settingsTab button {
+	min-width: 27ch !important;
+}
+.settingsTab .rightButton button {
+	margin-left: auto;
+}
+#exportButtonContainer a {
+	text-decoration: none;
+}
+.custom-file-upload {
+	position: relative;
+	display: inline-block;
+	background-color: #adadad;
+	color: #fff;
+	border: none;
+	padding: 10px 20px;
+	cursor: pointer;
+	border-radius: 5px;
+	overflow: hidden;
+}
+
+.custom-file-upload input[type='file'] {
+	position: absolute;
+	font-size: 100px;
+	right: 0;
+	top: 0;
+	opacity: 0;
+	cursor: pointer;
+}
+
+.custom-file-label {
+	margin-right: 10px;
+}
+#exportButtonContainer {
+	margin-top: 50px;
 }

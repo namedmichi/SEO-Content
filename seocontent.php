@@ -138,6 +138,37 @@ function set_settings_option()
 		file_put_contents($json_file_path, $json_data);
 	}
 }
+register_activation_hook(__FILE__, 'set_variables_option');
+
+function set_variables_option()
+{
+	// Überprüfen, ob die Option bereits existiert
+	$json_file_path = plugin_dir_path(__FILE__) . 'src/scripts/php/variables.json';
+	if (!get_option('seocontent_variables')) {
+		// Die Option existiert nicht, daher erstellen wir sie aus einer JSON-Datei
+
+		// Pfad zur JSON-Datei in deinem Plugin-Verzeichnis
+
+		// Lese den Inhalt der JSON-Datei
+		$json_data = file_get_contents($json_file_path);
+
+		// Konvertiere JSON in ein PHP-Array
+		$settings = json_decode($json_data, true);
+
+		// Füge die Option "seocontent_settings" mit den JSON-Daten hinzu
+		add_option('seocontent_variables', $settings);
+	} else {
+		// Die Option existiert, lade die Option und speichere sie in der JSON-Datei
+
+		$seocontent_settings = get_option('seocontent_variables');
+
+		// Konvertiere die Option in JSON-Format
+		$json_data = json_encode($seocontent_settings, JSON_PRETTY_PRINT);
+
+		// Speichere die JSON-Daten in der Datei
+		file_put_contents($json_file_path, $json_data);
+	}
+}
 
 
 register_activation_hook(__FILE__, 'set_template_option');
@@ -214,7 +245,47 @@ function update_seocontent_template()
 add_action('update_seocontent_templates_hook', 'update_seocontent_template');
 
 
+// Definiere eine benutzerdefinierte Hook
+function update_seocontent_variables()
+{
+	$json_file_path = plugin_dir_path(__FILE__) . 'src/scripts/php/variables.json';
 
+	$json_data = file_get_contents($json_file_path);
+
+	$settings = json_decode($json_data, true);
+
+	update_option('seocontent_variables', $settings);
+}
+
+
+add_action('update_seocontent_variables_hook', 'update_seocontent_variables');
+
+
+function import_seocontent_template()
+{
+	$templates  = isset($_POST['templates']) ? $_POST['templates'] : '';
+
+	$json_file_path = plugin_dir_path(__FILE__) . 'src/scripts/php/templateTest.json';
+
+
+	file_put_contents($json_file_path, $templates);
+
+	update_option('seocontent_templates', $templates);
+}
+
+// Füge deine benutzerdefinierte Hook zu WordPress hinzu
+add_action('import_seocontent_templates_hook', 'import_seocontent_template');
+
+add_action('wp_ajax_import_seocontent_settings_action', 'import_seocontent_template_action');
+add_action('wp_ajax_nopriv_import_seocontent_template_action', 'import_seocontent_template_action'); // Für nicht angemeldete Benutzer
+
+function import_seocontent_template_action()
+{
+	// Führe die benutzerdefinierte Hook aus
+	do_action('import_seocontent_templates_hook');
+
+	wp_die(); // Beende die AJAX-Anfrage
+}
 
 add_action('wp_ajax_update_seocontent_settings_action', 'update_seocontent_settings_action');
 add_action('wp_ajax_nopriv_update_seocontent_settings_action', 'update_seocontent_settings_action'); // Für nicht angemeldete Benutzer
@@ -235,6 +306,16 @@ function update_seocontent_templates_action()
 {
 	// Führe die benutzerdefinierte Hook aus
 	do_action('update_seocontent_templates_hook');
+
+	wp_die(); // Beende die AJAX-Anfrage
+}
+add_action('wp_ajax_update_seocontent_variables_action', 'update_seocontent_variables_action');
+add_action('wp_ajax_nopriv_update_seocontent_variables_action', 'update_seocontent_variables_action'); // Für nicht angemeldete Benutzer
+
+function update_seocontent_variables_action()
+{
+	// Führe die benutzerdefinierte Hook aus
+	do_action('update_seocontent_variables_hook');
 
 	wp_die(); // Beende die AJAX-Anfrage
 }

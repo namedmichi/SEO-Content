@@ -387,6 +387,23 @@ add_action('wp_ajax_save_main_settings', 'save_main_settings');
 add_action('wp_ajax_nopriv_save_main_settings', 'save_main_settings');
 add_action('wp_ajax_update_meta_page', 'update_meta_page');
 add_action('wp_ajax_nopriv_update_meta_page', 'update_meta_page');
+add_action('wp_ajax_save_variable_settings', 'save_variable_settings');
+add_action('wp_ajax_nopriv_save_variable_settings', 'save_variable_settings');
+/*
+ * Speichert die Einstellungen der Hauptseite 
+ */
+function save_variable_settings()
+{
+
+    $path = ABSPATH . 'wp-content/plugins/SEOContent/src/scripts/php/variables.json';
+
+    $variables = isset($_POST['variables']) ? $_POST['variables'] : '';
+    $jsonData = json_encode($variables, JSON_PRETTY_PRINT);
+    file_put_contents($path, $jsonData);
+    wp_die();
+}
+
+
 /*
  * Speichert die Einstellungen der Hauptseite 
  */

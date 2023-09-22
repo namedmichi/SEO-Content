@@ -62,7 +62,7 @@ request2.onreadystatechange = function () {
 		console.log(jsonData);
 	}
 };
-
+getCustomVariables();
 request2.send();
 
 function get_template(folder, subFolder, name) {
@@ -299,6 +299,16 @@ async function updateTemplateOption() {
 	await new Promise((r) => setTimeout(r, 1000));
 }
 
+let customVarList;
+function getCustomVariables() {
+	fetch(homeUrl + '/wp-content/plugins/SEOContent/src/scripts/php/variables.json')
+		.then((response) => response.json())
+		.then((json) => {
+			console.log(json);
+			customVarList = json;
+		});
+}
+
 async function askGpt(prompt, tokens) {
 	console.log('Prompt: ' + prompt);
 	chat.push({ role: 'user', content: prompt });
@@ -353,6 +363,7 @@ function ask_gpt_content_page() {
 	prompt = prompt.replace('{ton}', ton);
 
 	prompt = setKeywords(prompt);
+	prompt = replaceCustomVars(prompt);
 
 	askGpt(prompt, 100).then((result) => {
 		document.getElementById('nmd_title_input').innerHTML = result.replace(/^"(.*)"$/, '$1');
@@ -371,6 +382,7 @@ function ask_gpt_content_page_title() {
 	prompt = prompt.replace('{ueberschriftenAnzahl}', abschnitte);
 
 	prompt = setKeywords(prompt);
+	prompt = replaceCustomVars(prompt);
 
 	askGpt(prompt, 27 * abschnitte).then((result) => {
 		document.getElementById('nmd_abschnitte_input').innerHTML = result;
@@ -405,6 +417,7 @@ function ask_gpt_content_page_ueberschriften() {
 	}
 
 	prompt = setKeywords(prompt);
+	prompt = replaceCustomVars(prompt);
 
 	tokens = tokens * abschnitte * inhaltCount;
 	askGpt(prompt, tokens).then((result) => {
@@ -423,7 +436,7 @@ function ask_gpt_content_page_excerp() {
 	prompt = prompt.replace('{ton}', ton);
 
 	prompt = setKeywords(prompt);
-
+	prompt = replaceCustomVars(prompt);
 	askGpt(prompt, 100)
 		.then((result) => {
 			document.getElementById('nmd_excerp_input').innerHTML = result.replace(/^"(.*)"$/, '$1');
@@ -445,6 +458,15 @@ function ask_gpt_content_page_excerp() {
 			document.body.classList.remove('no-scroll');
 		});
 }
+
+function replaceCustomVars(prompt) {
+	for (let key in customVarList) {
+		let value = customVarList[key];
+		prompt = prompt.replace('{' + key + '}', value);
+	}
+	return prompt;
+}
+
 function setKeywords(prompt) {
 	var keywordList = document.getElementsByName('keyword');
 	var keywordAnzahlList = document.getElementsByName('keywordAnzahl');
