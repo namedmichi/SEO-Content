@@ -527,18 +527,19 @@ function nmd_create_content_callback()
 
 
     <div id="overlay">
-        <center>
-            <div class="lds-roller">
-                <div></div>
-                <div></div>
-                <div></div>
-                <div></div>
-                <div></div>
-                <div></div>
-                <div></div>
-                <div></div>
-            </div>
-        </center>
+
+        <div class="lds-roller">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <p style="position: absolute;top: 16px;left: 16px;">Loading</p>
+        </div>
+
     </div>
     <div class="background">
         <div class="header">

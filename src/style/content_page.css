@@ -1,13 +1,13 @@
 #overlay {
 	display: none;
-	position: fixed;
+	position: absolute;
 	justify-content: center;
-	align-items: center;
+
 	top: 0;
 	left: 0;
 	width: 100%;
 	height: 170%;
-	background-color: rgba(0, 0, 0, 0.4);
+	/* background-color: rgba(0, 0, 0, 0.4); */
 	/* Semi-transparent black overlay */
 	z-index: 9999;
 	/* Ensure the overlay is on top of other elements */
@@ -294,15 +294,16 @@ input {
 	margin-right: 12px !important;
 }
 .blurred {
-	filter: blur(0px);
-	/* Apply a blur effect to the content */
-	pointer-events: none;
-	/* Disable click events on the blurred content */
+	/* filter: blur(0px); */
+	/* /~ Apply a blur effect to the content ~/ */
+	/* pointer-events: none; */
+	/* /~ Disable click events on the blurred content ~/ */
 }
 
 .lds-roller {
 	display: inline-block;
-	position: relative;
+	position: sticky;
+	top: 50%;
 	width: 80px;
 	height: 80px;
 }
@@ -316,10 +317,10 @@ input {
 	content: ' ';
 	display: block;
 	position: absolute;
-	width: 7px;
-	height: 7px;
+	width: 9px;
+	height: 9px;
 	border-radius: 50%;
-	background: #fff;
+	background: #afcb08;
 	margin: -4px 0 0 -4px;
 }
 

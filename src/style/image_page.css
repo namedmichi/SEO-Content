@@ -35,6 +35,8 @@ textarea {
 	display: flex;
 	margin-top: 137px;
 	padding-bottom: 40px;
+	display: flex;
+	flex-direction: column;
 }
 
 .container {
@@ -123,14 +125,14 @@ textarea {
 }
 #overlay {
 	display: none;
-	position: fixed;
+	position: absolute;
 	justify-content: center;
-	align-items: center;
+	/* align-items: center; */
 	top: 0;
 	left: 0;
 	width: 100%;
 	height: 100%;
-	background-color: rgba(0, 0, 0, 0.4);
+	/* background-color: rgba(0, 0, 0, 0.4); */
 	/* Semi-transparent black overlay */
 	z-index: 9999;
 	/* Ensure the overlay is on top of other elements */
@@ -139,15 +141,16 @@ textarea {
 }
 
 .blurred {
-	filter: blur(0px);
-	/* Apply a blur effect to the content */
-	pointer-events: none;
-	/* Disable click events on the blurred content */
+	/* filter: blur(0px); */
+	/* /~ Apply a blur effect to the content ~/ */
+	/* pointer-events: none; */
+	/* /~ Disable click events on the blurred content ~/ */
 }
 
 .lds-roller {
 	display: inline-block;
-	position: relative;
+	position: sticky;
+	top: 50%;
 	width: 80px;
 	height: 80px;
 }
@@ -161,10 +164,10 @@ textarea {
 	content: ' ';
 	display: block;
 	position: absolute;
-	width: 7px;
-	height: 7px;
+	width: 9px;
+	height: 9px;
 	border-radius: 50%;
-	background: #fff;
+	background: #afcb08;
 	margin: -4px 0 0 -4px;
 }
 
@@ -251,6 +254,38 @@ textarea {
 }
 
 .no-scroll {
-	overflow: hidden;
+	/* overflow: hidden; */
 	/* Disable scrolling */
+}
+#image-container {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+
+	border: 2px dashed #ccc;
+	background-color: #fff;
+	cursor: pointer;
+}
+
+canvas {
+	border: 1px solid #000;
+}
+
+#pen-size {
+	margin-top: 20px;
+}
+
+#image-canvas-hidden {
+	display: none;
+}
+#editedImage {
+	width: fit-content;
+}
+.rowCenter {
+	display: flex;
+	align-items: baseline;
+}
+
+.spaced {
+	margin-right: 8px;
 }

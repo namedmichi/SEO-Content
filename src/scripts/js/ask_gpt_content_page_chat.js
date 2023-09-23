@@ -444,7 +444,7 @@ function ask_gpt_content_page_excerp() {
 			document.getElementById('overlay').style.display = 'none';
 			document.body.classList.remove('blurred');
 			document.body.classList.remove('no-scroll');
-			document.getElementsByTagName('html')[0].style.paddingTop = '32px';
+
 			chat = [
 				{
 					role: 'system',
@@ -546,7 +546,6 @@ function setKeywords(prompt) {
 	return prompt;
 }
 function setValues() {
-	document.getElementsByTagName('html')[0].style.paddingTop = '0';
 	document.body.classList.add('no-scroll');
 	document.getElementById('overlay').style.display = 'flex';
 	document.body.classList.add('blurred');
@@ -561,7 +560,6 @@ function setValues() {
 let faqCount = 1;
 
 function create_content_page() {
-	document.getElementsByTagName('html')[0].style.paddingTop = '0';
 	document.body.classList.add('no-scroll');
 	document.getElementById('overlay').style.display = 'flex';
 	document.body.classList.add('blurred');
@@ -611,7 +609,7 @@ function create_content_page() {
 					document.getElementById('overlay').style.display = 'none';
 					document.body.classList.remove('blurred');
 					document.body.classList.remove('no-scroll');
-					document.getElementsByTagName('html')[0].style.paddingTop = '32px';
+
 					if (typ == 'page') {
 						alert('Die Seite wurde erfolgreich erstellt. Sie können die Seite nun unter dem Menüpunkt "Seiten" finden.');
 					} else {
@@ -633,7 +631,7 @@ function create_content_page() {
 						document.getElementById('overlay').style.display = 'none';
 						document.body.classList.remove('blurred');
 						document.body.classList.remove('no-scroll');
-						document.getElementsByTagName('html')[0].style.paddingTop = '32px';
+
 						if (typ == 'page') {
 							alert('Die Seite wurde erfolgreich erstellt. Sie können die Seite nun unter dem Menüpunkt "Seiten" finden.');
 						} else {
@@ -647,7 +645,7 @@ function create_content_page() {
 						document.getElementById('overlay').style.display = 'none';
 						document.body.classList.remove('blurred');
 						document.body.classList.remove('no-scroll');
-						document.getElementsByTagName('html')[0].style.paddingTop = '32px';
+
 						alert('Es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.');
 					},
 				});
@@ -657,7 +655,6 @@ function create_content_page() {
 				document.getElementById('overlay').style.display = 'none';
 				document.body.classList.remove('blurred');
 				document.body.classList.remove('no-scroll');
-				document.getElementsByTagName('html')[0].style.paddingTop = '32px';
 			},
 		});
 	});
@@ -684,7 +681,6 @@ function addFAQ() {
 	document.getElementById('faq').appendChild(div);
 }
 async function generateFAQ() {
-	document.getElementsByTagName('html')[0].style.paddingTop = '0';
 	document.body.classList.add('no-scroll');
 	document.getElementById('overlay').style.display = 'flex';
 	document.body.classList.add('blurred');
@@ -713,7 +709,6 @@ async function generateFAQ() {
 	document.getElementById('overlay').style.display = 'none';
 	document.body.classList.remove('blurred');
 	document.body.classList.remove('no-scroll');
-	document.getElementsByTagName('html')[0].style.paddingTop = '32px';
 }
 //FAQ-Ausgabe generieren
 var faqOutput;
@@ -913,4 +908,8 @@ function testfunction() {
 			},
 		});
 	});
+}
+function setLoadingTest() {
+	document.getElementById('overlay').style.display = 'flex';
+	document.body.classList.add('blurred');
 }

@@ -102,7 +102,127 @@ function gpt_create_image()
         echo 'No response received.';
     }
 }
+function convertBase64ToImage($base64Data, $outputPath)
+{
+    $data = base64_decode($base64Data);
+    if ($data !== false) {
+        file_put_contents(dirname(__DIR__) . '/' . $outputPath, $data);
+        return true;
+    } else {
+        return false;
+    }
+}
 
+function gpt_image_variation()
+{
+    try {
+        require_once(dirname(dirname(dirname(dirname(dirname(dirname(__DIR__)))))) . '/wp-load.php');
+    } catch (\Throwable $th) {
+        echo $th;
+        try {
+            require_once(dirname(dirname(dirname(dirname(dirname(dirname(dirname(__DIR__))))))) . '/wp-load.php');
+        } catch (\Throwable $th) {
+            echo $th;
+        }
+    }
+    $orgBase64 = isset($_POST['orgBase64']) ? $_POST['orgBase64'] : '';
+    convertBase64ToImage($orgBase64, 'variation.png');
+
+
+
+    if (!class_exists('WP_Http')) {
+        include_once(ABSPATH . WPINC . '/class-http.php');
+    }
+
+
+    $ch = curl_init();
+
+    $image_path = dirname(__DIR__) . '/variation.png';
+
+
+    curl_setopt($ch, CURLOPT_URL, "https://api.openai.com/v1/images/variations");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_POST, 1);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, array(
+        'image' => new CURLFile($image_path),
+
+    ));
+    $path = ABSPATH . 'wp-content/plugins/SEOContent/src/scripts/php/settings.json';
+    $jsonString = file_get_contents($path);
+    $jsonArray = json_decode($jsonString, true);
+
+    $apiKey = $jsonArray['apiKey'];
+    $headers = array();
+    $headers[] = "Authorization: Bearer " . $apiKey;
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+    $result = curl_exec($ch);
+
+    if (curl_errno($ch)) {
+        echo 'Error:' . curl_error($ch);
+    }
+    echo $result;
+
+    curl_close($ch);
+}
+
+
+function gpt_edit_image()
+{
+    try {
+        require_once(dirname(dirname(dirname(dirname(dirname(dirname(__DIR__)))))) . '/wp-load.php');
+    } catch (\Throwable $th) {
+        echo $th;
+        try {
+            require_once(dirname(dirname(dirname(dirname(dirname(dirname(dirname(__DIR__))))))) . '/wp-load.php');
+        } catch (\Throwable $th) {
+            echo $th;
+        }
+    }
+    $orgBase64 = isset($_POST['orgBase64']) ? $_POST['orgBase64'] : '';
+    $maskBase64 = isset($_POST['maskBase64']) ? $_POST['maskBase64'] : '';
+    convertBase64ToImage($orgBase64, 'org.png');
+    convertBase64ToImage($maskBase64, 'mask.png');
+    $prompt = isset($_POST['prompt']) ? wp_kses_post($_POST['prompt']) : '';
+
+
+    if (!class_exists('WP_Http')) {
+        include_once(ABSPATH . WPINC . '/class-http.php');
+    }
+
+
+    $ch = curl_init();
+
+    $image_path = dirname(__DIR__) . '/org.png';
+    $mask_path = dirname(__DIR__) . '/mask.png';
+
+    curl_setopt($ch, CURLOPT_URL, "https://api.openai.com/v1/images/edits");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_POST, 1);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, array(
+        'image' => new CURLFile($image_path),
+        'mask' => new CURLFile($mask_path),
+        'prompt' => $prompt,
+
+    ));
+    $path = ABSPATH . 'wp-content/plugins/SEOContent/src/scripts/php/settings.json';
+    $jsonString = file_get_contents($path);
+    $jsonArray = json_decode($jsonString, true);
+
+    $apiKey = $jsonArray['apiKey'];
+    $headers = array();
+    $headers[] = "Authorization: Bearer " . $apiKey;
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+    $result = curl_exec($ch);
+
+    if (curl_errno($ch)) {
+        echo 'Error:' . curl_error($ch);
+    }
+    echo $result;
+
+    curl_close($ch);
+}
 
 /*
  * Fügt Bild in die Mediathek ein 
@@ -167,6 +287,10 @@ add_action('wp_ajax_gpt_create_image', 'gpt_create_image');
 add_action('wp_ajax_nopriv_gpt_create_image', 'gpt_create_image');
 add_action('wp_ajax_add_image', 'add_image');
 add_action('wp_ajax_nopriv_add_image', 'add_image');
+add_action('wp_ajax_gpt_edit_image', 'gpt_edit_image');
+add_action('wp_ajax_nopriv_gpt_edit_image', 'gpt_edit_image');
+add_action('wp_ajax_gpt_image_variation', 'gpt_image_variation');
+add_action('wp_ajax_nopriv_gpt_image_variation', 'gpt_image_variation');
 
 add_action('scriptTest2', 'myAjax');
 function nmd_create_image_callback()
@@ -176,18 +300,19 @@ function nmd_create_image_callback()
 ?>
 
     <div id="overlay">
-        <center>
-            <div class="lds-roller">
-                <div></div>
-                <div></div>
-                <div></div>
-                <div></div>
-                <div></div>
-                <div></div>
-                <div></div>
-                <div></div>
-            </div>
-        </center>
+
+        <div class="lds-roller">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <p style="position: absolute;top: 16px;left: 16px;">Loading</p>
+        </div>
+
     </div>
     <script>
         document.getElementById('wpcontent').style.paddingLeft = 0
@@ -262,7 +387,25 @@ function nmd_create_image_callback()
 
                 </div>
             </div>
-
+            <div class="editImage container">
+                <h2 class="wp-heading-inline">Bilder bearbeiten</h2>
+                <textarea name="editPrompt" id="editPrompt" cols="30" rows="1" placeholder="Prompt zu bearbeiten"></textarea>
+                <div class="rowCenter">
+                    <div class="rowCenter spaced">
+                        <label class="spaced" for="pen-size">Stift dicke</label>
+                        <input class="spaced" type="range" id="pen-size" min="5" max="60" value="3">
+                    </div>
+                    <button class="button action" id="submit-button">Inpaint absenden</button>
+                    <button class="button action" id="submit-button" onclick="imageVariation()">Variante erstellen(ohne Prompt)</button>
+                </div>
+                <div id="image-container">
+                    <input type="file" id="image-upload" accept="image/*">
+                    <canvas id="image-canvas"></canvas>
+                    <canvas id="image-canvas-hidden"></canvas>
+                    <img id="editedImage" src="" alt="">
+                </div>
+                <button class="button action" onclick="saveEditedImage()">Bild speichern</button>
+            </div>
         </div>
     </div>
 

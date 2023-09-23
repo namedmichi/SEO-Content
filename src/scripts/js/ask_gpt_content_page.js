@@ -162,7 +162,6 @@ function ask_gpt_content_page_excerp() {
 			document.getElementById('overlay').style.display = 'none';
 			document.body.classList.remove('blurred');
 			document.body.classList.remove('no-scroll');
-			document.getElementsByTagName('html')[0].style.paddingTop = '32px';
 		})
 		.catch((error) => {
 			alert(
@@ -175,7 +174,6 @@ function ask_gpt_content_page_excerp() {
 }
 
 function setValues() {
-	document.getElementsByTagName('html')[0].style.paddingTop = '0';
 	document.body.classList.add('no-scroll');
 	document.getElementById('overlay').style.display = 'flex';
 	document.body.classList.add('blurred');
