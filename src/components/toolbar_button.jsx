@@ -232,6 +232,16 @@ async function gpt_toolbar(content, selection, props) {
 	if (selection == 'keyword') {
 	}
 
+	if (props.name == 'core/list') {
+		let { listItems, listItemsClientIds } = testListItems(props.clientId);
+		console.log(listItems);
+		console.log(listItemsClientIds);
+		prompt =
+			'Ich habe hier ein array mit strings:' +
+			listItems +
+			' Übersetze jeden  wert in englisch und gib das array im JSON format wieder zurück. Gib nur das json array zurück.Antworte sonst nicht auf den Prompt.Gib nur die Übersetze version an';
+	}
+
 	await gpt_make_request(content, props, prompt);
 }
 
@@ -304,6 +314,9 @@ async function set_global_settings() {
 	settingsSet = true;
 }
 async function test_content(content, props) {
+	if (props.name == 'core/list') {
+		return;
+	}
 	if (content == undefined) {
 		try {
 			content = props.attributes.text;
@@ -318,6 +331,28 @@ async function test_content(content, props) {
 	}
 	document.getElementById('block-' + props.clientId).style.animation = '1.3s linear 0s infinite normal none running nmd-fading';
 	return content;
+}
+
+function testListItems(clientId) {
+	const blockElement = document.querySelector(`[data-block="${clientId}"]`);
+
+	const listItems = [];
+	const listItemsClientIds = [];
+
+	if (blockElement) {
+		const listItemElements = blockElement.querySelectorAll('li[data-type="core/list-item"]');
+		listItemElements.forEach((item) => {
+			listItems.push(item.textContent.trim());
+
+			// Extract clientId from the id attribute
+			const itemId = item.getAttribute('id');
+			if (itemId && itemId.startsWith('block-')) {
+				listItemsClientIds.push(itemId.replace('block-', ''));
+			}
+		});
+	}
+
+	return { listItems, listItemsClientIds };
 }
 async function gpt_make_request(content, props, prompt) {
 	content = test_content(content, props);
@@ -357,6 +392,10 @@ async function gpt_make_request(content, props, prompt) {
 				console.log(content);
 				var blockId = props.clientId;
 				console.log('BLock	ID: ' + blockId);
+
+				if (props.name == 'core/list') {
+					return;
+				}
 
 				if (select('core/block-editor').getBlock(blockId).attributes.content != undefined) {
 					select('core/block-editor').getBlock(blockId).attributes.content = content.trim().replace(/^"(.*)"$/, '$1');
