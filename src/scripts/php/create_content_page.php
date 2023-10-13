@@ -358,7 +358,162 @@ function get_prompt_template()
     $jsonString = file_get_contents($path);
     echo $jsonString;
 }
+
+function get_keyword_api()
+{
+
+    $topic = isset($_POST['topic']) ? $_POST['topic'] : '';
+
+    $url = 'http://94.130.105.89:5000/getKeyword';
+
+    // Data to be sent in the body of the POST request
+    $data = array(
+        'topic' => $topic
+    );
+
+    // Convert array to JSON string
+    $jsonData = json_encode($data);
+
+    // Initialize cURL session
+    $ch = curl_init($url);
+
+    // Set cURL options
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // Return response as a string
+    curl_setopt($ch, CURLOPT_POST, true);           // Set method to POST
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData); // Set POST data
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json')); // Set content type to JSON
+
+    // Execute cURL session and get the response
+    $response = curl_exec($ch);
+
+    // Check for cURL errors
+    if (curl_errno($ch)) {
+        // Handle error
+        echo 'cURL error: ' . curl_error($ch);
+    }
+
+    // Close cURL session
+    curl_close($ch);
+    header('Content-Type: application/json');
+    echo $response;
+    wp_die();
+}
+
+function get_best_keyword_api()
+{
+    $urlArray = isset($_POST['urlArray']) ? $_POST['urlArray'] : '';
+
+    $url = 'http://94.130.105.89:5000/get_best_keyword';
+
+    // Data to be sent in the body of the POST request
+    $data = array(
+        'urlArray' => $urlArray
+    );
+
+    // Convert array to JSON string
+    $jsonData = json_encode($data);
+
+    // Initialize cURL session
+    $ch = curl_init($url);
+
+    // Set cURL options
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // Return response as a string
+    curl_setopt($ch, CURLOPT_POST, true);           // Set method to POST
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData); // Set POST data
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json')); // Set content type to JSON
+
+    // Execute cURL session and get the response
+    $response = curl_exec($ch);
+
+    // Check for cURL errors
+    if (curl_errno($ch)) {
+        // Handle error
+        echo 'cURL error: ' . curl_error($ch);
+    }
+
+    // Close cURL session
+    curl_close($ch);
+    header('Content-Type: application/json');
+    echo $response;
+    wp_die();
+}
+
+function askGPT()
+{
+    $chat = isset($_POST['chat']) ? $_POST['chat'] : '';
+    $model = isset($_POST['model']) ? $_POST['model'] : '';
+    $temperature = isset($_POST['temperature']) ? $_POST['temperature'] : '';
+    // API URL for the POST request
+    $url = 'http://94.130.105.89:5000/chat';
+
+    // Data to be sent in the body of the POST request
+    $data = array(
+        'messages' => $chat,
+        'model' => $model,
+        'temperature' => $temperature
+    );
+
+    // Convert array to JSON string
+    $jsonData = json_encode($data);
+
+    // Initialize cURL session
+    $ch = curl_init($url);
+
+    // Set cURL options
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // Return response as a string
+    curl_setopt($ch, CURLOPT_POST, true);           // Set method to POST
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData); // Set POST data
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json')); // Set content type to JSON
+
+    // Execute cURL session and get the response
+    $response = curl_exec($ch);
+
+    // Check for cURL errors
+    if (curl_errno($ch)) {
+        // Handle error
+        echo 'cURL error: ' . curl_error($ch);
+    }
+
+    // Close cURL session
+    curl_close($ch);
+
+    // Use the API response
+    echo $response;
+
+    wp_die();
+}
+function getTokens()
+{
+
+    // API URL for the GET request
+    $url = 'http://94.130.105.89:5000/get_tokens';
+
+    // Initialize cURL session
+    $ch = curl_init($url);
+
+    // Set cURL options
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);  // Return response as a string
+
+    // Execute cURL session and get the response
+    $response = curl_exec($ch);
+
+    // Check for cURL errors
+    if (curl_errno($ch)) {
+        // Handle error
+        echo 'cURL error: ' . curl_error($ch);
+    }
+
+    // Close cURL session
+    curl_close($ch);
+
+    // Use the API response
+    echo $response;
+    wp_die();
+}
+
 add_action('scriptTest', 'testScript');
+add_action('wp_ajax_ask_gpt', 'askGPT');
+add_action('wp_ajax_get_tokens', 'getTokens');
 add_action('wp_ajax_my_ajax_request', 'gpt_create_post');
 add_action('wp_ajax_nopriv_my_ajax_request', 'gpt_create_post');
 add_action('wp_ajax_my_ajax_request2', 'gpt_add_script_to_post');
@@ -377,6 +532,10 @@ add_action('wp_ajax_edit_folder', 'edit_folder');
 add_action('wp_ajax_nopriv_edit_folder', 'edit_folder');
 add_action('wp_ajax_edit_sub_folder', 'edit_sub_folder');
 add_action('wp_ajax_nopriv_edit_sub_folder', 'edit_sub_folder');
+add_action('wp_ajax_get_keyword_api', 'get_keyword_api');
+add_action('wp_ajax_nopriv_get_keyword_api', 'get_keyword_api');
+add_action('wp_ajax_get_best_keyword_api', 'get_best_keyword_api');
+add_action('wp_ajax_nopriv_get_best_keyword_api', 'get_best_keyword_api');
 
 /*
  * Aktionen für Ajax Requests von anderen Seiten. (Workaround da nicht möglich in anderer Datei) 
@@ -496,6 +655,258 @@ function update_meta_page()
 
 
 
+
+/*
+*  Erstellt die AJAX actions für Meta-Daten
+*/
+
+
+
+
+
+
+/*
+ *  Löscht einen Prompt aus dem Prompttemplates
+ */
+function delete_template_meta()
+{
+    try {
+
+        require_once(dirname(dirname(dirname(dirname(dirname(dirname(__DIR__)))))) . '/wp-load.php');
+    } catch (\Throwable $th) {
+
+        try {
+            //code...
+            require_once(dirname(dirname(dirname(dirname(dirname(dirname(dirname(__DIR__))))))) . '/wp-load.php');
+        } catch (\Throwable $th) {
+        }
+    }
+
+    $path = ABSPATH . 'wp-content/plugins/SEOContent/src/scripts/php/metaPromptTemplates.json';
+    $jsonString = file_get_contents($path);
+    $jsonData = json_decode($jsonString, true);
+    $folder = "";
+    $subFolder = "";
+    $index = "";
+
+    try {
+
+        $folder = isset($_POST['folder']) ? $_POST['folder'] : '';
+        $subFolder = isset($_POST['subFolder']) ? $_POST['subFolder'] : '';
+        $index = isset($_POST['index']) ? $_POST['index'] : '';
+        $typ = isset($_POST['typ']) ? $_POST['typ'] : '';
+    } catch (Exception $e) {
+    }
+
+    if ($typ == 'prompt') {
+
+        unset($jsonData[$folder][$subFolder][$index]);
+    } elseif ($typ == 'sub') {
+        unset($jsonData[$folder][$subFolder]);
+    } elseif ($typ == 'folder') {
+        unset($jsonData[$folder]);
+    }
+
+
+    $jsonData = json_encode($jsonData, JSON_PRETTY_PRINT);
+    file_put_contents($path, $jsonData);
+
+    echo $jsonData;
+}
+/*
+ *  Erstellt einen Ordnernamen im Prompttemplate
+ */
+function create_folder_meta()
+{
+
+    try {
+
+        require_once(dirname(dirname(dirname(dirname(dirname(dirname(__DIR__)))))) . '/wp-load.php');
+    } catch (\Throwable $th) {
+
+        try {
+            //code...
+            require_once(dirname(dirname(dirname(dirname(dirname(dirname(dirname(__DIR__))))))) . '/wp-load.php');
+        } catch (\Throwable $th) {
+        }
+    }
+    $name = isset($_POST['name']) ? $_POST['name'] : '';
+
+    $path = ABSPATH . 'wp-content/plugins/SEOContent/src/scripts/php/metaPromptTemplates.json';
+    $jsonString = file_get_contents($path);
+    $jsonData = json_decode($jsonString, true);
+
+    $jsonData[$name] = [];
+
+    $jsonData = json_encode($jsonData, JSON_PRETTY_PRINT);
+    echo file_put_contents($path, $jsonData);
+}
+function edit_folder_meta()
+{
+
+    try {
+
+        require_once(dirname(dirname(dirname(dirname(dirname(dirname(__DIR__)))))) . '/wp-load.php');
+    } catch (\Throwable $th) {
+
+        try {
+            //code...
+            require_once(dirname(dirname(dirname(dirname(dirname(dirname(dirname(__DIR__))))))) . '/wp-load.php');
+        } catch (\Throwable $th) {
+        }
+    }
+
+    function changeKey_meta($array, $oldKey, $newKey)
+    {
+        // Check if the old key exists
+        if (array_key_exists($oldKey, $array)) {
+            // Change the key
+            $keys = array_keys($array);
+            $keys[array_search($oldKey, $keys)] = $newKey;
+
+            // Reassemble the array
+            $array = array_combine($keys, array_values($array));
+        }
+
+        // Process nested arrays
+        foreach ($array as $key => $value) {
+            if (is_array($value)) {
+                $array[$key] = changeKey_meta($value, $oldKey, $newKey);
+            }
+        }
+
+        return $array;
+    }
+    $folder = isset($_POST['folder']) ? $_POST['folder'] : '';
+    $newName = isset($_POST['newName']) ? $_POST['newName'] : '';
+
+    $path = ABSPATH . 'wp-content/plugins/SEOContent/src/scripts/php/metaPromptTemplates.json';
+    $jsonString = file_get_contents($path);
+    $jsonData = json_decode($jsonString, true);
+
+    $jsonData = changeKey_meta($jsonData, $folder, $newName);
+
+
+    $jsonData = json_encode($jsonData, JSON_PRETTY_PRINT);
+    echo file_put_contents($path, $jsonData);
+}
+
+
+add_action('wp_ajax_delete_template_meta', 'delete_template_meta');
+add_action('wp_ajax_nopriv_delete_template_meta', 'delete_template_meta');
+add_action('wp_ajax_create_folder_meta', 'create_folder_meta');
+add_action('wp_ajax_nopriv_create_folder_meta', 'create_folder_meta');
+add_action('wp_ajax_create_sub_folder_meta', 'create_sub_folder_meta');
+add_action('wp_ajax_nopriv_create_sub_folder_meta', 'create_sub_folder_meta');
+add_action('wp_ajax_save_template_meta', 'save_template_meta');
+add_action('wp_ajax_nopriv_save_template_meta', 'save_template_meta');
+add_action('wp_ajax_get_template_meta', 'get_prompt_template_meta');
+add_action('wp_ajax_nopriv_get_template_meta', 'get_prompt_template_meta');
+add_action('wp_ajax_edit_folder_meta', 'edit_folder_meta');
+add_action('wp_ajax_nopriv_edit_folder_meta', 'edit_folder_meta');
+add_action('wp_ajax_edit_sub_folder_meta', 'edit_sub_folder_meta');
+add_action('wp_ajax_nopriv_edit_sub_folder_meta', 'edit_sub_folder_meta');
+
+
+/*
+ *  Erstellt einen Unterordner im Prompttemplate
+ */
+function create_sub_folder_meta()
+{
+    error_reporting(E_ALL);
+    ini_set('display_errors', 1);
+    try {
+
+        require_once(dirname(dirname(dirname(dirname(dirname(dirname(__DIR__)))))) . '/wp-load.php');
+    } catch (\Throwable $th) {
+
+        try {
+            //code...
+            require_once(dirname(dirname(dirname(dirname(dirname(dirname(dirname(__DIR__))))))) . '/wp-load.php');
+        } catch (\Throwable $th) {
+        }
+    }
+    $name = isset($_POST['name']) ? $_POST['name'] : '';
+    $subName = isset($_POST['subName']) ? $_POST['subName'] : '';
+
+    $path = ABSPATH . 'wp-content/plugins/SEOContent/src/scripts/php/metaPromptTemplates.json';
+    $jsonString = file_get_contents($path);
+    $jsonData = json_decode($jsonString, true);
+
+    $jsonData[$name][$subName] = [];
+
+    $jsonData = json_encode($jsonData, JSON_PRETTY_PRINT);
+    file_put_contents($path, $jsonData);
+
+    echo $jsonData;
+    wp_die();
+}
+/*
+ *  Erstellt einen Prompt im Prompttemplate
+ */
+function save_template_meta()
+{
+    try {
+
+        require_once(dirname(dirname(dirname(dirname(dirname(dirname(__DIR__)))))) . '/wp-load.php');
+    } catch (\Throwable $th) {
+
+        try {
+            //code...
+            require_once(dirname(dirname(dirname(dirname(dirname(dirname(dirname(__DIR__))))))) . '/wp-load.php');
+        } catch (\Throwable $th) {
+        }
+    }
+    $path = ABSPATH . 'wp-content/plugins/SEOContent/src/scripts/php/metaPromptTemplates.json';
+    $jsonString = file_get_contents($path);
+    $jsonData = json_decode($jsonString, true);
+
+
+    $template_name = isset($_POST['template_name']) ? $_POST['template_name'] : '';
+    $template_description = isset($_POST['template_description']) ? $_POST['template_description'] : '';
+    $prompt1  = isset($_POST['prompt1']) ? $_POST['prompt1'] : '';
+    $prompt2  = isset($_POST['prompt2']) ? $_POST['prompt2'] : '';
+    $subFolder = isset($_POST['subFolder']) ? $_POST['subFolder'] : '';
+    $folder = isset($_POST['folder']) ? $_POST['folder'] : '';
+
+    $newTemplate = [$template_name => [$template_description, $prompt1, $prompt2]];
+
+    $newData = array_merge($jsonData[$folder][$subFolder], $newTemplate);
+    $jsonData[$folder][$subFolder] = $newData;
+
+    $jsonData = json_encode($jsonData, JSON_PRETTY_PRINT);
+    file_put_contents($path, $jsonData);
+
+    echo $jsonData;
+}
+/*
+ * Lädt ein Prompt aus den Prompttemplate
+ */
+function get_prompt_template_meta()
+{
+    try {
+
+        require_once(dirname(dirname(dirname(dirname(dirname(dirname(__DIR__)))))) . '/wp-load.php');
+    } catch (\Throwable $th) {
+
+        try {
+            //code...
+            require_once(dirname(dirname(dirname(dirname(dirname(dirname(dirname(__DIR__))))))) . '/wp-load.php');
+        } catch (\Throwable $th) {
+        }
+    }
+    $path = content_url() . '/plugins/SEOContent/src/scripts/php/metaPromptTemplates.json';
+    $jsonString = file_get_contents($path);
+    echo $jsonString;
+}
+
+
+
+
+
+
+
+
 function nmd_create_content_callback()
 {
     do_action('scriptTest');
@@ -538,6 +949,9 @@ function nmd_create_content_callback()
             <div></div>
             <div></div>
             <p style="position: absolute;top: 16px;left: 16px;">Loading</p>
+            <span class="overlayBackground">
+                <p id="loadingText" style="margin-bottom: 82px;">some Text</p>
+            </span>
         </div>
 
     </div>
@@ -625,8 +1039,12 @@ function nmd_create_content_callback()
                             </span>
                         </div>
                         <div id="keywordContainer" style="display: none;">
+                            <button id="keywordRechercheButton" style="margin-left: 8px;" class="button action" onclick="get_keywords()">Keyword Recherche mit KI durchführen</button>
                             <div id="keywordsAddContainer">
                                 <div class="keywordDiv">
+                                    <svg class="removeKeywordDiv" onclick="removeKeywordDiv(this)" xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 384 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. -->
+                                        <path d="M376.6 84.5c11.3-13.6 9.5-33.8-4.1-45.1s-33.8-9.5-45.1 4.1L192 206 56.6 43.5C45.3 29.9 25.1 28.1 11.5 39.4S-3.9 70.9 7.4 84.5L150.3 256 7.4 427.5c-11.3 13.6-9.5 33.8 4.1 45.1s33.8 9.5 45.1-4.1L192 306 327.4 468.5c11.3 13.6 31.5 15.4 45.1 4.1s15.4-31.5 4.1-45.1L233.7 256 376.6 84.5z" />
+                                    </svg>
                                     <label for="keyword">Keyword:</label>
                                     <br>
                                     <input name="keyword" id="keyword" type="text">
@@ -637,12 +1055,15 @@ function nmd_create_content_callback()
                                     <br>
                                     <label for="keywordWhere">Vorkommen in:</label>
                                     <p>Überschrift inkl. Absätze</p>
-                                    <label class="keywordWhereId1" for="1">1</label>
-                                    <input type="checkbox" name="1" class="keywordWhereId1 keywordWhereId1Value" id="1" value="1">
-                                    <label class="keywordWhereId2" for="2">2</label>
-                                    <input type="checkbox" name="2" class="keywordWhereId2 keywordWhereId2Value" id="2" value="2">
-                                    <label class="keywordWhereId3" for="3">3</label>
-                                    <input type="checkbox" name="3" class="keywordWhereId3 keywordWhereId3Value" id="3" value="3">
+                                    <div class="flexCenter">
+                                        <label class="keywordWhereId1" for="1">1</label>
+                                        <input type="checkbox" name="1" class="keywordWhereId1 keywordWhereId1Value" id="1" value="1">
+                                        <label class="keywordWhereId2" for="2">2</label>
+                                        <input type="checkbox" name="2" class="keywordWhereId2 keywordWhereId2Value" id="2" value="2">
+                                        <label class="keywordWhereId3" for="3">3</label>
+                                        <input type="checkbox" name="3" class="keywordWhereId3 keywordWhereId3Value" id="3" value="3">
+
+                                    </div>
                                     <br>
                                     <br>
                                     <label for="synonym">Synonyme(optional):</label>
@@ -656,7 +1077,7 @@ function nmd_create_content_callback()
                                 </div>
                             </div>
                             <button class="button button-primary" type="button" onclick="addKeyword()">+ Weiteres Keyword hinzufügen</button>
-                            <button class="button button-primary" style="background-color: #e42a2a;border-color: #e42a2a; width: 50%" type="button" onclick="removeKeyword()">- Keyword Entfernen</button>
+                            <!-- <button class="button button-primary" style="background-color: #e42a2a;border-color: #e42a2a; width: 50%" type="button" onclick="removeKeyword()">- Keyword Entfernen</button> -->
                         </div>
                     </div>
 

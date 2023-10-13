@@ -48,8 +48,7 @@ function gpt_create_image()
         }
     }
     $prompt = isset($_POST['image_prompt']) ? wp_kses_post($_POST['image_prompt']) : '';
-
-    $url = 'https://api.openai.com/v1/images/generations';
+    $premium = isset($_POST['premium']) ? $_POST['premium'] : "false";
 
     $path = ABSPATH . 'wp-content/plugins/SEOContent/src/scripts/php/settings.json';
     $jsonString = file_get_contents($path);
@@ -57,16 +56,25 @@ function gpt_create_image()
 
     $apiKey = $jsonArray['apiKey'];
 
-
-    $data = array(
-        'prompt' => ' ' . $prompt . ' ',
-        "n" => 1,
-        "size" => "1024x1024"
-
-    );
-
-
-    $jsonData = json_encode($data);
+    if ($premium == "true") {
+        // Logic when $premium is true, diverting to Flask App
+        $url = 'http://94.130.105.89:5000/create_image'; // Replace with your Flask app URL
+        $data = array(
+            'prompt' => $prompt,
+            "n" => 1,
+            "size" => "1024x1024"
+        );
+        $jsonData = json_encode($data);
+    } else {
+        // Original logic if $premium is false
+        $url = 'https://api.openai.com/v1/images/generations';
+        $data = array(
+            'prompt' => ' ' . $prompt . ' ',
+            "n" => 1,
+            "size" => "1024x1024"
+        );
+        $jsonData = json_encode($data);
+    }
 
 
     $ch = curl_init($url);
@@ -127,8 +135,7 @@ function gpt_image_variation()
     }
     $orgBase64 = isset($_POST['orgBase64']) ? $_POST['orgBase64'] : '';
     convertBase64ToImage($orgBase64, 'variation.png');
-
-
+    $premium = isset($_POST['premium']) ? $_POST['premium'] : 'false';
 
     if (!class_exists('WP_Http')) {
         include_once(ABSPATH . WPINC . '/class-http.php');
@@ -139,29 +146,45 @@ function gpt_image_variation()
 
     $image_path = dirname(__DIR__) . '/variation.png';
 
+    if ($premium == "true") {
+        // Set cURL options
+        curl_setopt($ch, CURLOPT_URL, "http://94.130.105.89:5000/image_variation");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, array(
+            'image' => new CURLFile($image_path),
+        ));
 
-    curl_setopt($ch, CURLOPT_URL, "https://api.openai.com/v1/images/variations");
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_POST, 1);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, array(
-        'image' => new CURLFile($image_path),
+        // Execute cURL session and handle response
+        $result = curl_exec($ch);
+        if (curl_errno($ch)) {
+            echo 'Error:' . curl_error($ch);
+        }
+        echo $result;
+    } else {
+        curl_setopt($ch, CURLOPT_URL, "https://api.openai.com/v1/images/variations");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, array(
+            'image' => new CURLFile($image_path),
 
-    ));
-    $path = ABSPATH . 'wp-content/plugins/SEOContent/src/scripts/php/settings.json';
-    $jsonString = file_get_contents($path);
-    $jsonArray = json_decode($jsonString, true);
+        ));
+        $path = ABSPATH . 'wp-content/plugins/SEOContent/src/scripts/php/settings.json';
+        $jsonString = file_get_contents($path);
+        $jsonArray = json_decode($jsonString, true);
 
-    $apiKey = $jsonArray['apiKey'];
-    $headers = array();
-    $headers[] = "Authorization: Bearer " . $apiKey;
-    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        $apiKey = $jsonArray['apiKey'];
+        $headers = array();
+        $headers[] = "Authorization: Bearer " . $apiKey;
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
-    $result = curl_exec($ch);
+        $result = curl_exec($ch);
 
-    if (curl_errno($ch)) {
-        echo 'Error:' . curl_error($ch);
+        if (curl_errno($ch)) {
+            echo 'Error:' . curl_error($ch);
+        }
+        echo $result;
     }
-    echo $result;
 
     curl_close($ch);
 }
@@ -179,49 +202,65 @@ function gpt_edit_image()
             echo $th;
         }
     }
+
     $orgBase64 = isset($_POST['orgBase64']) ? $_POST['orgBase64'] : '';
     $maskBase64 = isset($_POST['maskBase64']) ? $_POST['maskBase64'] : '';
     convertBase64ToImage($orgBase64, 'org.png');
     convertBase64ToImage($maskBase64, 'mask.png');
     $prompt = isset($_POST['prompt']) ? wp_kses_post($_POST['prompt']) : '';
+    $premium = isset($_POST['premium']) ? $_POST['premium'] : 'false';
 
-
-    if (!class_exists('WP_Http')) {
-        include_once(ABSPATH . WPINC . '/class-http.php');
-    }
-
-
-    $ch = curl_init();
-
+    // Prepare for a POST request to Flask endpoint
     $image_path = dirname(__DIR__) . '/org.png';
     $mask_path = dirname(__DIR__) . '/mask.png';
 
-    curl_setopt($ch, CURLOPT_URL, "https://api.openai.com/v1/images/edits");
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_POST, 1);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, array(
-        'image' => new CURLFile($image_path),
-        'mask' => new CURLFile($mask_path),
-        'prompt' => $prompt,
+    $ch = curl_init();
+    if ($premium == "true") {
 
-    ));
-    $path = ABSPATH . 'wp-content/plugins/SEOContent/src/scripts/php/settings.json';
-    $jsonString = file_get_contents($path);
-    $jsonArray = json_decode($jsonString, true);
+        curl_setopt($ch, CURLOPT_URL, "http://94.130.105.89:5000/edit_image");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, array(
+            'image' => new CURLFile($image_path),
+            'mask' => new CURLFile($mask_path),
+            'prompt' => $prompt,
+        ));
 
-    $apiKey = $jsonArray['apiKey'];
-    $headers = array();
-    $headers[] = "Authorization: Bearer " . $apiKey;
-    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        $result = curl_exec($ch);
 
-    $result = curl_exec($ch);
+        if (curl_errno($ch)) {
+            echo 'Error:' . curl_error($ch);
+        }
+        echo $result;
+        curl_close($ch);
+    } else {
+        curl_setopt($ch, CURLOPT_URL, "https://api.openai.com/v1/images/edits");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, array(
+            'image' => new CURLFile($image_path),
+            'mask' => new CURLFile($mask_path),
+            'prompt' => $prompt,
 
-    if (curl_errno($ch)) {
-        echo 'Error:' . curl_error($ch);
+        ));
+        $path = ABSPATH . 'wp-content/plugins/SEOContent/src/scripts/php/settings.json';
+        $jsonString = file_get_contents($path);
+        $jsonArray = json_decode($jsonString, true);
+
+        $apiKey = $jsonArray['apiKey'];
+        $headers = array();
+        $headers[] = "Authorization: Bearer " . $apiKey;
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+        $result = curl_exec($ch);
+
+        echo $result;
+
+        curl_close($ch);
     }
-    echo $result;
 
-    curl_close($ch);
+
+    wp_die();
 }
 
 /*
@@ -311,6 +350,9 @@ function nmd_create_image_callback()
             <div></div>
             <div></div>
             <p style="position: absolute;top: 16px;left: 16px;">Loading</p>
+            <span class="overlayBackground">
+                <p id="loadingText" style="margin-bottom: 82px;">some Text</p>
+            </span>
         </div>
 
     </div>
@@ -389,22 +431,33 @@ function nmd_create_image_callback()
             </div>
             <div class="editImage container">
                 <h2 class="wp-heading-inline">Bilder bearbeiten</h2>
-                <textarea name="editPrompt" id="editPrompt" cols="30" rows="1" placeholder="Prompt zu bearbeiten"></textarea>
-                <div class="rowCenter">
-                    <div class="rowCenter spaced">
-                        <label class="spaced" for="pen-size">Stift dicke</label>
-                        <input class="spaced" type="range" id="pen-size" min="5" max="60" value="3">
+                <div class="editImageContainer">
+                    <div class="rowCenter">
+                        <div class="rowCenter spaced toolbar">
+                            <label class="spaced" for="pen-size"><svg xmlns="http://www.w3.org/2000/svg" height="1.5em" viewBox="0 0 576 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. -->
+                                    <path d="M339.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L568.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S517.7-4.4 499.1 9.6L262.4 187.2c-24 18-38.2 46.1-38.4 76.1L339.3 367.1zm-19.6 25.4l-116-104.4C143.9 290.3 96 339.6 96 400c0 3.9 .2 7.8 .6 11.6C98.4 429.1 86.4 448 68.8 448H64c-17.7 0-32 14.3-32 32s14.3 32 32 32H208c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z" />
+                                </svg></label>
+                            <input class="spaced" type="range" id="pen-size" min="5" max="60" value="3">
+                            <label for="erase"><svg xmlns="http://www.w3.org/2000/svg" height="1.5em" viewBox="0 0 576 512" style="margin-right: 8px;"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. -->
+                                    <path d="M290.7 57.4L57.4 290.7c-25 25-25 65.5 0 90.5l80 80c12 12 28.3 18.7 45.3 18.7H288h9.4H512c17.7 0 32-14.3 32-32s-14.3-32-32-32H387.9L518.6 285.3c25-25 25-65.5 0-90.5L381.3 57.4c-25-25-65.5-25-90.5 0zM297.4 416H288l-105.4 0-80-80L227.3 211.3 364.7 348.7 297.4 416z" />
+                                </svg></label>
+                            <input type="checkbox" name="erase" id="erase">
+                        </div>
                     </div>
+                    <div id="image-container">
+                        <input type="file" id="image-upload" accept="image/*">
+                        <div style="position: relative;">
+                            <canvas id="image-canvas"></canvas>
+                            <canvas id="tempCanvas" style="position: absolute; top: 0;left: 0; "></canvas>
+                        </div>
+                        <canvas id="image-canvas-hidden"></canvas>
+                        <img id="editedImage" src="" alt="">
+                    </div>
+                    <textarea name="editPrompt" id="editPrompt" cols="30" rows="1" placeholder="Prompt zu bearbeiten"></textarea>
                     <button class="button action" id="submit-button">Inpaint absenden</button>
                     <button class="button action" id="submit-button" onclick="imageVariation()">Variante erstellen(ohne Prompt)</button>
+                    <button class="button action" onclick="saveEditedImage()">Bild speichern</button>
                 </div>
-                <div id="image-container">
-                    <input type="file" id="image-upload" accept="image/*">
-                    <canvas id="image-canvas"></canvas>
-                    <canvas id="image-canvas-hidden"></canvas>
-                    <img id="editedImage" src="" alt="">
-                </div>
-                <button class="button action" onclick="saveEditedImage()">Bild speichern</button>
             </div>
         </div>
     </div>

@@ -9,8 +9,56 @@ var ueberschriften;
 var inhaltCount;
 var var_prompt = '';
 var promptList;
-
+let loadingText = document.getElementById('loadingText');
 var chat;
+
+let warns = document.getElementsByClassName('notice-warning');
+
+for (let i = 0; i < warns.length; i++) {
+	warns[i].style.display = 'none';
+}
+
+let tokens;
+let premium = false;
+function checkpremium() {
+	jQuery(function ($) {
+		$.ajax({
+			url: myAjax.ajaxurl,
+			method: 'POST',
+			data: {
+				action: 'get_tokens',
+			},
+			success: function (response) {
+				let array = JSON.parse(response);
+				try {
+					tokens = array['tokens'];
+					premium = true;
+				} catch (error) {
+					premium = false;
+				}
+				setPremiumfields();
+			},
+			error: function (error) {
+				console.log(error);
+			},
+		});
+	});
+}
+
+checkpremium();
+
+function setPremiumfields() {
+	if (premium == true) {
+	} else {
+		document.getElementById('keywordRechercheButton').style.backgroundColor = 'gray';
+		document.getElementById('keywordRechercheButton').disabled = true;
+		document.getElementById('keywordRechercheButton').ariaLabel = 'Premium benötigt';
+		document.getElementById('keywordRechercheButton').title = 'Premium benötigt';
+		document.getElementById('keywordRechercheButton').style.color = '#d0d0d0';
+		document.getElementById('keywordRechercheButton').style.cursor = 'not-allowed';
+		document.getElementById('keywordRechercheButton').style.border = 'none';
+	}
+}
 
 function getHomeUrl() {
 	var href = window.location.href;
@@ -313,48 +361,76 @@ async function askGpt(prompt, tokens) {
 	console.log('Prompt: ' + prompt);
 	chat.push({ role: 'user', content: prompt });
 	try {
-		const response = await axios.post(
-			API_ENDPOINT,
-			{
-				messages: chat,
+		if (premium == false) {
+			const response = await axios.post(
+				API_ENDPOINT,
+				{
+					messages: chat,
 
-				temperature: 0.6,
-				model: 'gpt-4',
-				n: 1,
-			},
-			{
-				headers: {
-					'Content-Type': 'application/json',
-					Authorization: `Bearer ${settingsArray['apiKey']}`,
+					temperature: 0.6,
+					model: 'gpt-4',
+					n: 1,
 				},
-			}
-		);
+				{
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: `Bearer ${settingsArray['apiKey']}`,
+					},
+				}
+			);
 
-		if (response.status === 200) {
-			const { choices } = response.data;
-			if (choices && choices.length > 0) {
-				console.log(choices);
-				const { message } = choices[0];
-				const { content } = message;
-				console.log(content);
-				chat.push({ role: 'assistant', content: content });
-				return content.trim();
+			if (response.status === 200) {
+				const { choices } = response.data;
+				if (choices && choices.length > 0) {
+					console.log(choices);
+					const { message } = choices[0];
+					const { content } = message;
+					console.log(content);
+					chat.push({ role: 'assistant', content: content });
+					return content.trim();
+				}
 			}
+			throw new Error('Chat completion request failed.');
+		} else {
+			return new Promise((resolve, reject) => {
+				jQuery.ajax({
+					url: myAjax.ajaxurl,
+					method: 'POST',
+					data: {
+						action: 'ask_gpt',
+						chat: chat,
+						temperature: 0.6,
+						model: 'gpt-4',
+					},
+					success: function (response) {
+						try {
+							response = JSON.parse(response);
+							console.log(response);
+							let content = response['answer'];
+							resolve(content.trim()); // Resolve the promise with the response content
+						} catch (e) {
+							reject(e); // Reject the promise if there is an error (e.g., in parsing the response)
+						}
+					},
+					error: function (error) {
+						reject(error); // Reject the promise if the AJAX request fails
+					},
+				});
+			});
 		}
-
-		throw new Error('Chat completion request failed.');
 	} catch (error) {
 		console.error('Error:', error.message);
 		alert(
 			'Es ist ein Fehler aufgetreten. Bitte warten Sie ein paar Sekunden und versuchen es dan erneut. Bei weiteren Probleme kontaktieren Sie bitte den Support'
 		);
+		removeLoadingScreen();
 		throw error;
 	}
 }
 
 function ask_gpt_content_page() {
 	setValues();
-
+	loadingText.innerHTML = 'Generiere Titel...';
 	var result;
 
 	var prompt = document.getElementById('title_prompt').value;
@@ -362,7 +438,7 @@ function ask_gpt_content_page() {
 	prompt = prompt.replace('{stil}', stil);
 	prompt = prompt.replace('{ton}', ton);
 
-	prompt = setKeywords(prompt);
+	prompt = setKeywords(prompt, 'title');
 	prompt = replaceCustomVars(prompt);
 
 	askGpt(prompt, 100).then((result) => {
@@ -373,7 +449,7 @@ function ask_gpt_content_page() {
 }
 function ask_gpt_content_page_title() {
 	setValues();
-
+	loadingText.innerHTML = 'Generiere Überschriften...';
 	var prompt = document.getElementById('abschnitte_prompt').value;
 	prompt = prompt.replace('{title}', title);
 	prompt = prompt.replace('{stil}', stil);
@@ -381,7 +457,7 @@ function ask_gpt_content_page_title() {
 	prompt = prompt.replace('{ueberschriftenAnzahl}', abschnitte);
 	prompt = prompt.replace('{ueberschriftenAnzahl}', abschnitte);
 
-	prompt = setKeywords(prompt);
+	prompt = setKeywords(prompt, 'ueberschriften');
 	prompt = replaceCustomVars(prompt);
 
 	askGpt(prompt, 27 * abschnitte).then((result) => {
@@ -392,7 +468,7 @@ function ask_gpt_content_page_title() {
 }
 function ask_gpt_content_page_ueberschriften() {
 	setValues();
-
+	loadingText.innerHTML = 'Generiere Inhalt...';
 	var words = document.getElementById('nmd_words_count').value;
 	var tokens = words * 3;
 	var prompt = document.getElementById('inhalt_prompt').value;
@@ -416,7 +492,7 @@ function ask_gpt_content_page_ueberschriften() {
 		prompt = prompt.replace('{warumWir}', warumWir);
 	}
 
-	prompt = setKeywords(prompt);
+	prompt = setKeywords(prompt, 'inhalt');
 	prompt = replaceCustomVars(prompt);
 
 	tokens = tokens * abschnitte * inhaltCount;
@@ -429,21 +505,19 @@ function ask_gpt_content_page_ueberschriften() {
 
 function ask_gpt_content_page_excerp() {
 	setValues();
-
+	loadingText.innerHTML = 'Generiere Meta-Daten...';
 	var prompt = document.getElementById('excerp_prompt').value;
 	prompt = prompt.replace('{title}', title);
 	prompt = prompt.replace('{stil}', stil);
 	prompt = prompt.replace('{ton}', ton);
 
-	prompt = setKeywords(prompt);
+	prompt = setKeywords(prompt, 'excerp');
 	prompt = replaceCustomVars(prompt);
 	askGpt(prompt, 100)
 		.then((result) => {
 			document.getElementById('nmd_excerp_input').innerHTML = result.replace(/^"(.*)"$/, '$1');
 			document.getElementById('nmd_excerp_input').value = result.replace(/^"(.*)"$/, '$1');
-			document.getElementById('overlay').style.display = 'none';
-			document.body.classList.remove('blurred');
-			document.body.classList.remove('no-scroll');
+			removeLoadingScreen();
 
 			chat = [
 				{
@@ -453,9 +527,7 @@ function ask_gpt_content_page_excerp() {
 			];
 		})
 		.catch((error) => {
-			document.getElementById('overlay').style.display = 'none';
-			document.body.classList.remove('blurred');
-			document.body.classList.remove('no-scroll');
+			removeLoadingScreen();
 		});
 }
 
@@ -467,7 +539,7 @@ function replaceCustomVars(prompt) {
 	return prompt;
 }
 
-function setKeywords(prompt) {
+function setKeywords(prompt, step) {
 	var keywordList = document.getElementsByName('keyword');
 	var keywordAnzahlList = document.getElementsByName('keywordAnzahl');
 	var beschreibungList = document.getElementsByName('beschreibung');
@@ -490,54 +562,63 @@ function setKeywords(prompt) {
 		var ones = document.getElementsByClassName('keywordWhereId1Value');
 		for (var i = 0; i < ones.length; i++) {
 			if (ones[i].checked) {
-				keywordString += ones[i].value + ',';
+				keywordString = '(Überschrift 1)';
 			}
 			keywordReihenfolgeArray.push(keywordString);
-			keywordString = '';
+			keywordString = '(Überschrift 1)';
 		}
 	} else if (headingCounter == 2) {
-		let keywordString = '';
+		let keywordString = '(Überschrift 1, Überschrift 2)';
 		var ones = document.getElementsByClassName('keywordWhereId1Value');
 		var twos = document.getElementsByClassName('keywordWhereId2Value');
 		for (var i = 0; i < ones.length; i++) {
-			if (ones[i].checked) {
-				keywordString += ones[i].value + ',';
+			if (!ones[i].checked) {
+				keywordString = keywordString.replace('Überschrift 1, ', '');
 			}
-			if (twos[i].checked) {
-				keywordString += twos[i].value + ',';
+			if (!twos[i].checked) {
+				keywordString = keywordString.replace('Überschrift 2', '');
 			}
 			keywordReihenfolgeArray.push(keywordString);
-			keywordString = '';
+			keywordString = '(Überschrift 1, Überschrift 2)';
 		}
 	} else if (headingCounter == 3) {
-		let keywordString = '';
+		let keywordString = '(Überschrift 1, Überschrift 2, Überschrift 3)';
 		var ones = document.getElementsByClassName('keywordWhereId1Value');
 		var twos = document.getElementsByClassName('keywordWhereId2Value');
 		var threes = document.getElementsByClassName('keywordWhereId3Value');
 		for (var i = 0; i < ones.length; i++) {
-			if (ones[i].checked) {
-				keywordString += ones[i].value + ',';
+			if (!ones[i].checked) {
+				keywordString = keywordString.replace('Überschrift 1, ', '');
 			}
-			if (twos[i].checked) {
-				keywordString += twos[i].value + ',';
+			if (!twos[i].checked) {
+				keywordString = keywordString.replace('Überschrift 2, ', '');
 			}
-			if (threes[i].checked) {
-				keywordString += threes[i].value + ',';
+			if (!threes[i].checked) {
+				keywordString = keywordString.replace('Überschrift 3', '');
 			}
 			keywordReihenfolgeArray.push(keywordString);
-			keywordString = '';
+			keywordString = '(Überschrift 1, Überschrift 2, Überschrift 3)';
 		}
 	}
+	console.log(keywordReihenfolgeArray);
 	var keywordStringFinal = '';
 	for (var i = 0; i < keywordInputs.length; i++) {
 		var keyword = keywordInputs[i];
 		var anzahl = keywordAnzahlInputs[i];
-
-		let tempPrompt = promptList['keywordPrompt'];
+		let tempPrompt = '';
+		if (step == 'title') {
+			tempPrompt = promptList['keywordPromptTitel'];
+		} else if (step == 'inhalt') {
+			tempPrompt = promptList['keywordPromptInhalt'];
+		} else if (step == 'ueberschriften') {
+			tempPrompt = promptList['keywordPromptUeberschrift'];
+		} else {
+			tempPrompt = promptList['keywordPromptTitel'];
+		}
 		tempPrompt = tempPrompt.replace('{keyword}', keyword);
 		tempPrompt = tempPrompt.replace('{anzahl}', anzahl);
 		tempPrompt = tempPrompt.replace('{i}', i);
-		tempPrompt = tempPrompt.replace('reihenfolge', keywordReihenfolgeArray[i]);
+		tempPrompt = tempPrompt.replace('{reihenfolge}', keywordReihenfolgeArray[i]);
 		tempPrompt = tempPrompt.replace('{beschreibung}', beschreibungInputs[i]);
 		tempPrompt = tempPrompt.replace('{Synonyme}', synonymInputs[i]);
 		keywordStringFinal += tempPrompt;
@@ -546,9 +627,7 @@ function setKeywords(prompt) {
 	return prompt;
 }
 function setValues() {
-	document.body.classList.add('no-scroll');
-	document.getElementById('overlay').style.display = 'flex';
-	document.body.classList.add('blurred');
+	setLoadingScreen();
 	ton = '';
 	stil = document.getElementById('nmd_stil_select').value;
 	topic = document.getElementById('nmd_topic_input').value;
@@ -560,9 +639,8 @@ function setValues() {
 let faqCount = 1;
 
 function create_content_page() {
-	document.body.classList.add('no-scroll');
-	document.getElementById('overlay').style.display = 'flex';
-	document.body.classList.add('blurred');
+	setLoadingScreen();
+	loadingText.innerHTML = 'Erstelle Seite...';
 	generateMarkup();
 	var title_output = document.getElementById('nmd_title_input').value;
 	var inhalt = document.getElementById('nmd_inhalt_input').value;
@@ -606,10 +684,8 @@ function create_content_page() {
 			success: function (response) {
 				console.log(response);
 				if (!faqBool) {
-					document.getElementById('overlay').style.display = 'none';
-					document.body.classList.remove('blurred');
-					document.body.classList.remove('no-scroll');
-
+					removeLoadingScreen();
+					loadingText.innerHTML = 'Füge Metadaten hinzu...';
 					if (typ == 'page') {
 						alert('Die Seite wurde erfolgreich erstellt. Sie können die Seite nun unter dem Menüpunkt "Seiten" finden.');
 					} else {
@@ -628,9 +704,7 @@ function create_content_page() {
 					},
 					success: function (response) {
 						console.log(response);
-						document.getElementById('overlay').style.display = 'none';
-						document.body.classList.remove('blurred');
-						document.body.classList.remove('no-scroll');
+						removeLoadingScreen();
 
 						if (typ == 'page') {
 							alert('Die Seite wurde erfolgreich erstellt. Sie können die Seite nun unter dem Menüpunkt "Seiten" finden.');
@@ -642,9 +716,7 @@ function create_content_page() {
 					},
 					error: function (error) {
 						console.log(error);
-						document.getElementById('overlay').style.display = 'none';
-						document.body.classList.remove('blurred');
-						document.body.classList.remove('no-scroll');
+						removeLoadingScreen();
 
 						alert('Es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.');
 					},
@@ -652,9 +724,7 @@ function create_content_page() {
 			},
 			error: function (error) {
 				console.log(error);
-				document.getElementById('overlay').style.display = 'none';
-				document.body.classList.remove('blurred');
-				document.body.classList.remove('no-scroll');
+				removeLoadingScreen();
 			},
 		});
 	});
@@ -681,9 +751,8 @@ function addFAQ() {
 	document.getElementById('faq').appendChild(div);
 }
 async function generateFAQ() {
-	document.body.classList.add('no-scroll');
-	document.getElementById('overlay').style.display = 'flex';
-	document.body.classList.add('blurred');
+	loadingText.innerHTML = 'Generiere FAQ...';
+	setLoadingScreen();
 	for (let index = 0; faqCount < 5; index++) {
 		addFAQ();
 	}
@@ -692,6 +761,7 @@ async function generateFAQ() {
 	var prompt = promptList['faqPrompt'];
 	prompt = prompt.replace('{faqThema}', faqThema);
 	let output = await askGpt(prompt, 390);
+	loadingText.innerHTML = 'FAQ generiert. Fülle die Felder aus...';
 	outputArray = output.split('\n');
 	for (let i = outputArray.length - 1; i >= 0; i--) {
 		if ((i + 1) % 3 === 0) {
@@ -706,9 +776,7 @@ async function generateFAQ() {
 		questionInputs[index].value = outputArray[index * 2].replace('Frage: ', '');
 		answerInputs[index].value = outputArray[index * 2 + 1].replace('Antwort: ', '');
 	}
-	document.getElementById('overlay').style.display = 'none';
-	document.body.classList.remove('blurred');
-	document.body.classList.remove('no-scroll');
+	removeLoadingScreen();
 }
 //FAQ-Ausgabe generieren
 var faqOutput;
@@ -750,10 +818,8 @@ function generateMarkup() {
 async function generateAnswers() {
 	var questionInputs = document.getElementsByName('question');
 	var answerInputs = document.getElementsByName('answer');
-	document.body.classList.add('no-scroll');
-	document.getElementById('overlay').style.display = 'flex';
-	document.body.classList.add('blurred');
-
+	setLoadingScreen();
+	loadingText.innerHTML = 'Generiere Antworten...';
 	for (var i = 0; i < questionInputs.length; i++) {
 		let question = questionInputs[i].value;
 		let answer = answerInputs[i];
@@ -763,9 +829,7 @@ async function generateAnswers() {
 		console.log(output);
 		answer.value = output;
 	}
-	document.getElementById('overlay').style.display = 'none';
-	document.body.classList.remove('blurred');
-	document.body.classList.remove('no-scroll');
+	removeLoadingScreen();
 }
 function showTab(tabName, n) {
 	var tab = document.getElementById(tabName + 'Container');
@@ -820,15 +884,16 @@ function headingCount(number) {
 	}
 	headingCounter = number;
 }
+keywordCounter = 1;
 function addKeyword() {
 	var div = document.createElement('div');
 	div.classList.add('keywordDiv');
 	var oneHeading =
-		'<label class="keywordWhereId1" for="1">1</label><input type="checkbox" name="1" class="keywordWhereId1 keywordWhereId1Value" id="1" value="1">	<label style="display: none" class="keywordWhereId2" for="2">2</label><input style="display: none" type="checkbox" name="2" class="keywordWhereId2 keywordWhereId2Value" id="2" value="2"><label style="display: none" class="keywordWhereId3" for="3">3</label><input style="display: none" type="checkbox" name="3" class="keywordWhereId3 keywordWhereId3Value" id="3" value="3">';
+		'<div class="flexCenter"><label class="keywordWhereId1" for="1">1</label><input type="checkbox" name="1" class="keywordWhereId1 keywordWhereId1Value" id="1" value="1">	<label style="display: none" class="keywordWhereId2" for="2">2</label><input style="display: none" type="checkbox" name="2" class="keywordWhereId2 keywordWhereId2Value" id="2" value="2"><label style="display: none" class="keywordWhereId3" for="3">3</label><input style="display: none" type="checkbox" name="3" class="keywordWhereId3 keywordWhereId3Value" id="3" value="3"></div>';
 	var twoHeading =
-		'<label class="keywordWhereId1" for="1">1</label><input type="checkbox" name="1" class="keywordWhereId1 keywordWhereId1Value" id="1" value="1"><label class="keywordWhereId2" for="2">2</label><input type="checkbox" name="2" class="keywordWhereId2 keywordWhereId2Value" id="2" value="2"><label style="display: none" class="keywordWhereId3" for="3">3</label><input style="display: none" type="checkbox" name="3" class="keywordWhereId3 keywordWhereId3Value" id="3" value="3">	';
+		'<div class="flexCenter"><label class="keywordWhereId1" for="1">1</label><input type="checkbox" name="1" class="keywordWhereId1 keywordWhereId1Value" id="1" value="1"><label class="keywordWhereId2" for="2">2</label><input type="checkbox" name="2" class="keywordWhereId2 keywordWhereId2Value" id="2" value="2"><label style="display: none" class="keywordWhereId3" for="3">3</label><input style="display: none" type="checkbox" name="3" class="keywordWhereId3 keywordWhereId3Value" id="3" value="3">	</div>';
 	var threeHeading =
-		' <label class="keywordWhereId1" for="1">1</label><input type="checkbox" name="1" class="keywordWhereId1 keywordWhereId1Value" id="1" value="1"><label class="keywordWhereId2" for="2">2</label><input type="checkbox" name="2" class="keywordWhereId2 keywordWhereId2Value" id="2" value="2"><label class="keywordWhereId3" for="3">3</label><input type="checkbox" name="3" class="keywordWhereId3 keywordWhereId3Value" id="3" value="3">';
+		'<div class="flexCenter"> <label class="keywordWhereId1" for="1">1</label><input type="checkbox" name="1" class="keywordWhereId1 keywordWhereId1Value" id="1" value="1"><label class="keywordWhereId2" for="2">2</label><input type="checkbox" name="2" class="keywordWhereId2 keywordWhereId2Value" id="2" value="2"><label class="keywordWhereId3" for="3">3</label><input type="checkbox" name="3" class="keywordWhereId3 keywordWhereId3Value" id="3" value="3"></div>';
 
 	var actualHeadingtext = '';
 
@@ -843,6 +908,7 @@ function addKeyword() {
 	}
 
 	div.innerHTML =
+		'<svg class="removeKeywordDiv" onclick="removeKeywordDiv(this)" xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 384 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. -->		<path d="M376.6 84.5c11.3-13.6 9.5-33.8-4.1-45.1s-33.8-9.5-45.1 4.1L192 206 56.6 43.5C45.3 29.9 25.1 28.1 11.5 39.4S-3.9 70.9 7.4 84.5L150.3 256 7.4 427.5c-11.3 13.6-9.5 33.8 4.1 45.1s33.8 9.5 45.1-4.1L192 306 327.4 468.5c11.3 13.6 31.5 15.4 45.1 4.1s15.4-31.5 4.1-45.1L233.7 256 376.6 84.5z" />	</svg>' +
 		'<label for="keyword">Keyword: </label><br>' +
 		'<input type="text" id="keyword' +
 		'" name="keyword' +
@@ -912,4 +978,129 @@ function testfunction() {
 function setLoadingTest() {
 	document.getElementById('overlay').style.display = 'flex';
 	document.body.classList.add('blurred');
+}
+function get_keywords() {
+	let topic = document.getElementById('nmd_topic_input').value;
+	setLoadingScreen();
+	loadingText.innerHTML = 'Gute Keywords werden gesucht...';
+	jQuery(function ($) {
+		$.ajax({
+			url: myAjax.ajaxurl,
+			method: 'POST',
+			data: {
+				topic: encodeURIComponent(topic),
+				action: 'get_keyword_api',
+			},
+			success: function (response) {
+				let domainArray = [];
+
+				for (i = 0; i < 5; i++) {
+					try {
+						let domain = 'www.' + encodeURIComponent(response.answer[0].result[i].domain);
+						domainArray.push(domain);
+					} catch (error) {
+						continue;
+					}
+				}
+				loadingText.innerHTML = 'Keywords werden gefiltert...';
+				$.ajax({
+					url: myAjax.ajaxurl,
+					method: 'POST',
+					data: {
+						urlArray: domainArray,
+						action: 'get_best_keyword_api',
+					},
+					success: function (response) {
+						let kwArray = [];
+						loadingText.innerHTML = 'Keywords werden mit Hilfe von KI verbessert...';
+						for (i = 0; i < 5; i++) {
+							if (response[i] == '' || JSON.parse(response[i]).status == 'fail') {
+								continue;
+							}
+							let jsonData = JSON.parse(response[i]);
+
+							for (j = 0; j < jsonData.answer[0].result.length; j++) {
+								let kw = jsonData.answer[0].result[j].kw;
+								kwArray.push(kw);
+							}
+						}
+						const uniqueStringsArray = [...new Set(kwArray)];
+						console.log(uniqueStringsArray);
+
+						let filterPrompt = promptList['filterKeywordsPrompt'];
+						filterPrompt = filterPrompt.replace('{thema}', topic);
+						filterPrompt = filterPrompt.replace('{keywordArray}', uniqueStringsArray);
+						askGpt(filterPrompt, 100).then((result) => {
+							try {
+								resultArry = JSON.parse(result);
+							} catch (error) {
+								removeLoadingScreen();
+							}
+							console.log(resultArry['Keywords']);
+							for (i = 0; i < resultArry['Keywords'].length; i++) {
+								addKeywordDiv(resultArry['Keywords'][i]);
+							}
+							removeLoadingScreen();
+						});
+					},
+					error: function (error) {
+						console.log(error);
+						removeLoadingScreen();
+					},
+				});
+			},
+			error: function (error) {
+				console.log(error);
+				removeLoadingScreen();
+			},
+		});
+	});
+}
+
+function setLoadingScreen() {
+	document.getElementById('overlay').style.display = 'flex';
+	document.body.classList.add('blurred');
+}
+function removeLoadingScreen() {
+	document.getElementById('overlay').style.display = 'none';
+	document.body.classList.remove('blurred');
+}
+function removeKeywordDiv(element) {
+	var parentDiv = element.parentElement;
+	parentDiv.remove();
+}
+function addKeywordDiv(keyword) {
+	var div = document.createElement('div');
+	div.classList.add('keywordDiv');
+	var oneHeading =
+		'<div class="flexCenter"><label class="keywordWhereId1" for="1">1</label><input type="checkbox" name="1" class="keywordWhereId1 keywordWhereId1Value" id="1" value="1">	<label style="display: none" class="keywordWhereId2" for="2">2</label><input style="display: none" type="checkbox" name="2" class="keywordWhereId2 keywordWhereId2Value" id="2" value="2"><label style="display: none" class="keywordWhereId3" for="3">3</label><input style="display: none" type="checkbox" name="3" class="keywordWhereId3 keywordWhereId3Value" id="3" value="3"></div>';
+	var twoHeading =
+		'<div class="flexCenter"><label class="keywordWhereId1" for="1">1</label><input type="checkbox" name="1" class="keywordWhereId1 keywordWhereId1Value" id="1" value="1"><label class="keywordWhereId2" for="2">2</label><input type="checkbox" name="2" class="keywordWhereId2 keywordWhereId2Value" id="2" value="2"><label style="display: none" class="keywordWhereId3" for="3">3</label><input style="display: none" type="checkbox" name="3" class="keywordWhereId3 keywordWhereId3Value" id="3" value="3">	</div>';
+	var threeHeading =
+		'<div class="flexCenter"> <label class="keywordWhereId1" for="1">1</label><input type="checkbox" name="1" class="keywordWhereId1 keywordWhereId1Value" id="1" value="1"><label class="keywordWhereId2" for="2">2</label><input type="checkbox" name="2" class="keywordWhereId2 keywordWhereId2Value" id="2" value="2"><label class="keywordWhereId3" for="3">3</label><input type="checkbox" name="3" class="keywordWhereId3 keywordWhereId3Value" id="3" value="3"></div>';
+
+	var actualHeadingtext = '';
+
+	if (headingCounter == 1) {
+		actualHeadingtext = oneHeading;
+	}
+	if (headingCounter == 2) {
+		actualHeadingtext = twoHeading;
+	}
+	if (headingCounter == 3) {
+		actualHeadingtext = threeHeading;
+	}
+
+	div.innerHTML =
+		'<svg class="removeKeywordDiv" onclick="removeKeywordDiv(this)" xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 384 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. -->		<path d="M376.6 84.5c11.3-13.6 9.5-33.8-4.1-45.1s-33.8-9.5-45.1 4.1L192 206 56.6 43.5C45.3 29.9 25.1 28.1 11.5 39.4S-3.9 70.9 7.4 84.5L150.3 256 7.4 427.5c-11.3 13.6-9.5 33.8 4.1 45.1s33.8 9.5 45.1-4.1L192 306 327.4 468.5c11.3 13.6 31.5 15.4 45.1 4.1s15.4-31.5 4.1-45.1L233.7 256 376.6 84.5z" />	</svg>' +
+		'<label for="keyword">Keyword: </label><br>' +
+		'<input type="text" id="keyword' +
+		'" value="' +
+		keyword +
+		'"  name="keyword' +
+		'" class="eingabe"> <br>	<label for="keywordAnzahl">Vorkommen im Text:</label> <br><input type="number" name="keywordAnzahl" id="keywordAnzahl" style="width: 8ch;"> <br>  <label for="keywordWhere">Vorkommen in:</label>		<p>Überschrift inkl. Absätze</p>		' +
+		actualHeadingtext +
+		' <br> <br><label for="synonym">Synonyme(optional):</label><br><input name="synonym" id="synonym" type="text" placeholder="Synonym1, Synonym2, ...">' +
+		'<br><label for="beschreibung">Beschreibung(Optional):</label><br><input type="text" name="beschreibung" id="beschreibung"><br>';
+	document.getElementById('keywordsAddContainer').appendChild(div);
 }

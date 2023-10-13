@@ -16,7 +16,7 @@
  * Plugin Name:       SEO Content
  * Plugin URI:        https://www.seo-kueche.de
  * Description:       KI-gestütztes Plugin zur automatisierten Erstellung von SEO-konformen Inhalten und Meta-Daten.
- * Version:           1.0.3
+ * Version:           1.0.4
  * Author:            SEO Küche
  * Author URI:        https://www.seo-kueche.de
  * License:           GPL-2.0+
@@ -37,6 +37,7 @@ define('__ROOT__', dirname(dirname(__FILE__)));
 require_once __DIR__ . '/src/scripts/php/plugin_mask.php';
 require_once __DIR__ . '/src/scripts/php/create_content_page.php';
 require_once __DIR__ . '/src/scripts/php/create_image_page.php';
+require_once __DIR__ . '/vendor/autoload.php';
 
 
 
@@ -204,6 +205,40 @@ function set_template_option()
 	}
 }
 
+register_activation_hook(__FILE__, 'set_template_option_meta');
+
+function set_template_option_meta()
+{
+	// Überprüfen, ob die Option bereits existiert
+	$json_file_path = plugin_dir_path(__FILE__) . 'src/scripts/php/metaPromptTemplates.json';
+	if (!get_option('seocontent_templates_meta')) {
+		// Die Option existiert nicht, daher erstellen wir sie aus einer JSON-Datei
+
+		// Pfad zur JSON-Datei in deinem Plugin-Verzeichnis
+
+		// Lese den Inhalt der JSON-Datei
+		$json_data = file_get_contents($json_file_path);
+
+		// Konvertiere JSON in ein PHP-Array
+		$settings = json_decode($json_data, true);
+
+		// Füge die Option "seocontent_settings" mit den JSON-Daten hinzu
+		add_option('seocontent_templates_meta', $settings);
+	} else {
+		// Die Option existiert, lade die Option und speichere sie in der JSON-Datei
+
+		$seocontent_templates = get_option('seocontent_templates_meta');
+
+		// Konvertiere die Option in JSON-Format
+		$json_data = json_encode($seocontent_templates, JSON_PRETTY_PRINT);
+
+		// Speichere die JSON-Daten in der Datei
+		file_put_contents($json_file_path, $json_data);
+	}
+}
+
+
+
 // Definiere eine benutzerdefinierte Hook
 function update_seocontent_settings()
 {
@@ -243,6 +278,25 @@ function update_seocontent_template()
 
 // Füge deine benutzerdefinierte Hook zu WordPress hinzu
 add_action('update_seocontent_templates_hook', 'update_seocontent_template');
+
+// Definiere eine benutzerdefinierte Hook
+function update_seocontent_template_meta()
+{
+	// Pfad zur JSON-Datei in deinem Plugin-Verzeichnis
+	$json_file_path = plugin_dir_path(__FILE__) . 'src/scripts/php/metaPromptTemplates.json';
+
+	// Lese den Inhalt der JSON-Datei
+	$json_data = file_get_contents($json_file_path);
+
+	// Konvertiere JSON in ein PHP-Array
+	$settings = json_decode($json_data, true);
+
+	// Aktualisiere die Option "seocontent_settings" mit den neuen JSON-Daten
+	update_option('seocontent_templates', $settings);
+}
+
+// Füge deine benutzerdefinierte Hook zu WordPress hinzu
+add_action('update_seocontent_templates_meta_hook', 'update_seocontent_template_meta');
 
 
 // Definiere eine benutzerdefinierte Hook
@@ -306,6 +360,16 @@ function update_seocontent_templates_action()
 {
 	// Führe die benutzerdefinierte Hook aus
 	do_action('update_seocontent_templates_hook');
+
+	wp_die(); // Beende die AJAX-Anfrage
+}
+add_action('wp_ajax_update_seocontent_templates_meta_action', 'update_seocontent_templates_meta_action');
+add_action('wp_ajax_nopriv_update_seocontent_templates_meta_action', 'update_seocontent_templates_meta_action'); // Für nicht angemeldete Benutzer
+
+function update_seocontent_templates_meta_action()
+{
+	// Führe die benutzerdefinierte Hook aus
+	do_action('update_seocontent_templates_meta_hook');
 
 	wp_die(); // Beende die AJAX-Anfrage
 }

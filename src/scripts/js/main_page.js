@@ -1,6 +1,52 @@
 let dropArea;
 let dropAreaTemplates;
 let dropAreaVariables;
+let warns = document.getElementsByClassName('notice-warning');
+
+for (let i = 0; i < warns.length; i++) {
+	warns[i].style.display = 'none';
+}
+let tokens;
+let premium = false;
+function checkpremium() {
+	jQuery(function ($) {
+		$.ajax({
+			url: myAjax.ajaxurl,
+			method: 'POST',
+			data: {
+				action: 'get_tokens',
+			},
+			success: function (response) {
+				let array = JSON.parse(response);
+				try {
+					tokens = array['tokens'];
+					premium = true;
+				} catch (error) {
+					premium = false;
+				}
+				setPremiumfields();
+			},
+			error: function (error) {
+				console.log(error);
+			},
+		});
+	});
+}
+
+checkpremium();
+
+function setPremiumfields() {
+	if (premium == true) {
+		document.getElementById('apiKey').style.display = 'none';
+		document.getElementById('apiKeyLabel').style.display = 'none';
+		document.getElementById('tokensLeft').style.display = 'block';
+		document.getElementById('tokensLeft').textContent = parseInt(tokens, 10).toLocaleString('de-DE');
+		document.getElementById('tokensLeftLable').style.display = 'block';
+	} else {
+		document.getElementById('apiKey').style.display = 'block';
+		document.getElementById('apiKeyLabel').style.display = 'block';
+	}
+}
 
 function saveSettings() {
 	var apiKey = document.getElementById('apiKey').value;

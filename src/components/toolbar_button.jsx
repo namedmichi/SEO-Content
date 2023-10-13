@@ -9,6 +9,9 @@ import Modal from 'react-modal';
 import axios from 'axios';
 const Download = (BlockEdit) => {
 	return (props) => {
+		if (props.name == 'core/table') {
+			return <BlockEdit {...props} />;
+		}
 		console.log(props);
 		const [modalIsOpen, setIsOpen] = React.useState(false);
 		function openModal() {
@@ -205,41 +208,61 @@ const Download = (BlockEdit) => {
 	};
 };
 addFilter('editor.BlockEdit', 'Nmd_Form', Download);
-
+let listItemClientIdsArray;
 async function gpt_toolbar(content, selection, props) {
 	await set_global_settings();
 
 	if (selection == 'correct') {
 		var prompt = promptList['toolbarCorrect'];
 		prompt = prompt.replace('{content}', content);
+		if (props.name == 'core/list') {
+			let { listItems, listItemsClientIds } = testListItems(props.clientId);
+			listItemClientIdsArray = listItemsClientIds;
+			prompt = promptList['toolbarCorrectList'];
+			prompt = prompt.replace('{content}', listItems);
+		}
 	}
 	if (selection == 'readability') {
 		var prompt = promptList['toolbarReadability'];
 		prompt = prompt.replace('{content}', content);
+		if (props.name == 'core/list') {
+			let { listItems, listItemsClientIds } = testListItems(props.clientId);
+			listItemClientIdsArray = listItemsClientIds;
+			prompt = promptList['toolbarReadabilityList'];
+			prompt = prompt.replace('{content}', listItems);
+		}
 	}
 	if (selection == 'longer') {
 		var prompt = promptList['toolbarLonger'];
 		prompt = prompt.replace('{content}', content);
+		if (props.name == 'core/list') {
+			let { listItems, listItemsClientIds } = testListItems(props.clientId);
+			listItemClientIdsArray = listItemsClientIds;
+			prompt = promptList['toolbarLongerList'];
+			prompt = prompt.replace('{content}', listItems);
+		}
 	}
 	if (selection == 'shorter') {
 		var prompt = promptList['toolbarShorter'];
 		prompt = prompt.replace('{content}', content);
+		if (props.name == 'core/list') {
+			let { listItems, listItemsClientIds } = testListItems(props.clientId);
+			listItemClientIdsArray = listItemsClientIds;
+			prompt = promptList['toolbarShorterList'];
+			prompt = prompt.replace('{content}', listItems);
+		}
 	}
 	if (selection == 'rewrite') {
 		var prompt = promptList['toolbarRewrite'];
 		prompt = prompt.replace('{content}', content);
+		if (props.name == 'core/list') {
+			let { listItems, listItemsClientIds } = testListItems(props.clientId);
+			listItemClientIdsArray = listItemsClientIds;
+			prompt = promptList['toolbarRewriteList'];
+			prompt = prompt.replace('{content}', listItems);
+		}
 	}
 	if (selection == 'keyword') {
-	}
-
-	if (props.name == 'core/list') {
-		let { listItems, listItemsClientIds } = testListItems(props.clientId);
-		console.log(listItems);
-		console.log(listItemsClientIds);
-		prompt =
-			'Ich habe hier ein array mit strings:' +
-			listItems +
-			' Übersetze jeden  wert in englisch und gib das array im JSON format wieder zurück. Gib nur das json array zurück.Antworte sonst nicht auf den Prompt.Gib nur die Übersetze version an';
 	}
 
 	await gpt_make_request(content, props, prompt);
@@ -250,6 +273,12 @@ async function gpt_toolbar_keyword(content, props, keyword, count) {
 
 	var prompt = promptList['toolbarKeyword'];
 	prompt = prompt.replace('{content}', content);
+	if (props.name == 'core/list') {
+		let { listItems, listItemsClientIds } = testListItems(props.clientId);
+		listItemClientIdsArray = listItemsClientIds;
+		prompt = promptList['toolbarKeywordList'];
+		prompt = prompt.replace('{content}', listItems);
+	}
 	prompt = prompt.replace('{keyword}', keyword);
 	prompt = prompt.replace('{anzahl}', count);
 
@@ -260,6 +289,12 @@ async function gpt_language_keyword(content, props, sprache) {
 
 	var prompt = promptList['toolbarTranslate'];
 	prompt = prompt.replace('{content}', content);
+	if (props.name == 'core/list') {
+		let { listItems, listItemsClientIds } = testListItems(props.clientId);
+		listItemClientIdsArray = listItemsClientIds;
+		prompt = promptList['toolbarTranslateList'];
+		prompt = prompt.replace('{content}', listItems);
+	}
 	prompt = prompt.replace('{sprache}', sprache);
 
 	await gpt_make_request(content, props, prompt);
@@ -315,7 +350,8 @@ async function set_global_settings() {
 }
 async function test_content(content, props) {
 	if (props.name == 'core/list') {
-		return;
+		document.getElementById('block-' + props.clientId).style.animation = '1.3s linear 0s infinite normal none running nmd-fading';
+		return content;
 	}
 	if (content == undefined) {
 		try {
@@ -394,6 +430,16 @@ async function gpt_make_request(content, props, prompt) {
 				console.log('BLock	ID: ' + blockId);
 
 				if (props.name == 'core/list') {
+					let contentJsonArray = JSON.parse(content);
+					console.log(contentJsonArray);
+					for (let i = 0; i < contentJsonArray.length; i++) {
+						select('core/block-editor').getBlock(listItemClientIdsArray[i]).attributes.content = contentJsonArray[i]
+							.trim()
+							.replace(/^"(.*)"$/, '$1');
+						var updatedAttributes = select('core/block-editor').getBlock(listItemClientIdsArray[i]).attributes;
+						dispatch('core/block-editor').updateBlock(listItemClientIdsArray[i], updatedAttributes);
+					}
+					document.getElementById('block-' + props.clientId).style.animation = '';
 					return;
 				}
 

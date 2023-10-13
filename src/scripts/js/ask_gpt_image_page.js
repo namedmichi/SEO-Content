@@ -5,11 +5,46 @@ function getHomeUrl() {
 	return homeUrl;
 }
 homeUrl = getHomeUrl();
-
+let loadingText = document.getElementById('loadingText');
 var settingsArray;
 const request2 = new XMLHttpRequest();
 var jsonUrl = homeUrl + '/wp-content/plugins/SEOContent/src/scripts/php/settings.json'; // Replace with the actual URL of your JSON file
 var apiKey = '';
+
+let warns = document.getElementsByClassName('notice-warning');
+
+for (let i = 0; i < warns.length; i++) {
+	warns[i].style.display = 'none';
+}
+
+let tokens;
+let premium = 'false';
+function checkpremium() {
+	jQuery(function ($) {
+		$.ajax({
+			url: myAjax.ajaxurl,
+			method: 'POST',
+			data: {
+				action: 'get_tokens',
+			},
+			success: function (response) {
+				let array = JSON.parse(response);
+				try {
+					tokens = array['tokens'];
+					premium = 'true';
+				} catch (error) {
+					console.log(error);
+					premium = 'false';
+				}
+			},
+			error: function (error) {
+				console.log(error);
+			},
+		});
+	});
+}
+
+checkpremium();
 
 request2.open('GET', jsonUrl, true);
 request2.onreadystatechange = function () {
@@ -31,11 +66,13 @@ function create_image() {
 	document.getElementById('overlay').style.display = 'flex';
 	document.body.classList.add('blurred');
 	document.body.classList.add('no-scroll');
-
 	count = document.getElementById('count').value;
 	image_prompt = document.getElementById('nmd_image_prompt').value;
 	if (count == '') {
 		count = 1;
+		loadingText.innerHTML = 'Bild wird erstellt..';
+	} else {
+		loadingText.innerHTML = 'Bilder werden erstellt..';
 	}
 	console.log(count);
 	let checkboxes = document.getElementsByName('selectImage');
@@ -48,6 +85,7 @@ function create_image() {
 				data: {
 					action: 'gpt_create_image',
 					image_prompt: image_prompt,
+					premium: premium,
 				},
 				success: function (response) {
 					response = response.slice(0, -1);
@@ -75,7 +113,7 @@ function add_image() {
 	document.getElementById('overlay').style.display = 'flex';
 	document.body.classList.add('blurred');
 	document.body.classList.add('no-scroll');
-
+	loadingText.innerHTML = 'Bilder werden hinzugefügt...';
 	count = document.getElementById('count').value;
 	let checkboxes = document.getElementsByName('selectImage');
 	for (let index = 0; index <= count; index++) {
@@ -131,14 +169,18 @@ function add_image() {
 const imageUpload = document.getElementById('image-upload');
 const imageCanvas = document.getElementById('image-canvas');
 const imageCanvasHidden = document.getElementById('image-canvas-hidden');
+let tempCanvas = document.getElementById('tempCanvas');
 const ctx = imageCanvas.getContext('2d');
 const ctxHidden = imageCanvasHidden.getContext('2d');
+let tempCtx = tempCanvas.getContext('2d');
 const penSizeInput = document.getElementById('pen-size');
 const submitButton = document.getElementById('submit-button');
+let eraserCheckbox = document.getElementById('erase');
 let orgFile;
 let orgSrc;
 let isDrawing = false;
 let orgFilename;
+let orgImage;
 
 imageUpload.addEventListener('change', function (e) {
 	const file = e.target.files[0];
@@ -155,6 +197,9 @@ imageUpload.addEventListener('change', function (e) {
 				imageCanvas.height = img.height;
 				imageCanvasHidden.width = img.width;
 				imageCanvasHidden.height = img.height;
+				tempCanvas.width = img.width;
+				tempCanvas.height = img.height;
+				orgImage = img;
 				ctx.drawImage(img, 0, 0, img.width, img.height);
 				orgFile = imageCanvas.toDataURL('image/png');
 			};
@@ -163,24 +208,38 @@ imageUpload.addEventListener('change', function (e) {
 	}
 });
 
-imageCanvas.addEventListener('mousedown', () => {
+tempCanvas.addEventListener('mousedown', () => {
 	isDrawing = true;
-	ctx.lineWidth = penSizeInput.value;
-	ctx.lineCap = 'round';
-	ctx.strokeStyle = '#000';
-	ctx.beginPath();
+	tempCtx.lineWidth = penSizeInput.value;
+	tempCtx.lineCap = 'round';
+	if (eraserCheckbox.checked) {
+		tempCtx.globalCompositeOperation = 'destination-out';
+	} else {
+		tempCtx.globalCompositeOperation = 'source-over';
+		tempCtx.strokeStyle = '#000';
+	}
+	tempCtx.beginPath();
 });
 
-imageCanvas.addEventListener('mousemove', (e) => {
+tempCanvas.addEventListener('mousemove', (e) => {
 	if (!isDrawing) return;
-	ctx.lineTo(e.clientX - imageCanvas.getBoundingClientRect().left, e.clientY - imageCanvas.getBoundingClientRect().top);
-	ctx.stroke();
+	tempCtx.lineTo(e.clientX - tempCanvas.getBoundingClientRect().left, e.clientY - tempCanvas.getBoundingClientRect().top);
+	tempCtx.stroke();
 });
 
-imageCanvas.addEventListener('mouseup', () => {
+tempCanvas.addEventListener('mouseup', () => {
 	isDrawing = false;
-	ctx.closePath();
+	tempCtx.closePath();
 });
+function mergeAndExport() {
+	// Zeichne den Inhalt des temporären Canvas auf den Hintergrund-Canvas
+	ctx.drawImage(tempCanvas, 0, 0);
+
+	// Konvertiere den Inhalt des Hintergrund-Canvas in einen Base64-String
+	let base64String = imageCanvas.toDataURL();
+
+	return base64String;
+}
 
 submitButton.addEventListener('click', async () => {
 	if (orgFile == null || orgFile == undefined) {
@@ -190,7 +249,7 @@ submitButton.addEventListener('click', async () => {
 	document.getElementById('overlay').style.display = 'flex';
 	document.body.classList.add('blurred');
 	document.body.classList.add('no-scroll');
-
+	loadingText.innerHTML = 'Bild wird bearbeitet...';
 	const originalImage = imageCanvas.toDataURL('image/png');
 
 	// Create a new image with transparent background for the edited image
@@ -205,6 +264,7 @@ submitButton.addEventListener('click', async () => {
 		document.getElementById('overlay').style.display = 'flex';
 		document.body.classList.add('blurred');
 		document.body.classList.add('no-scroll');
+
 		draw();
 		let baseImage = orgFile;
 		let splitarray = baseImage.split('base64,');
@@ -223,18 +283,23 @@ submitButton.addEventListener('click', async () => {
 					orgBase64: splitarray[1],
 					maskBase64: splitarrayMask[1],
 					prompt: document.getElementById('editPrompt').value,
+					premium: premium,
 				},
 				success: function (response) {
 					response = response.slice(0, -1);
 					let json = JSON.parse(response);
 					let imgUrl;
 					try {
-						console.log(json.data[0].url);
-						imgUrl = json.data[0].url;
+						console.log(json[0].url);
+						imgUrl = json[0].url;
 					} catch (error) {
-						alert(
-							'Es ist ein Fehler aufgetreten. Bitte warten Sie ein paar Sekunden und versuchen es dan erneut. Bei weiteren Probleme kontaktieren Sie bitte den Support'
-						);
+						try {
+							imgUrl = json.data[0].url;
+						} catch (error) {
+							alert(
+								'Es ist ein Fehler aufgetreten. Bitte warten Sie ein paar Sekunden und versuchen es dan erneut. Bei weiteren Probleme kontaktieren Sie bitte den Support'
+							);
+						}
 
 						document.getElementById('overlay').style.display = 'none';
 						document.body.classList.remove('blurred');
@@ -246,6 +311,7 @@ submitButton.addEventListener('click', async () => {
 						document.getElementById('image-canvas').getContext('2d').canvas.height + 'px';
 					document.getElementById('editedImage').style.width =
 						document.getElementById('image-canvas').getContext('2d').canvas.width + 'px';
+					ctx.drawImage(orgImage, 0, 0, orgImage.width, orgImage.height);
 
 					document.getElementById('overlay').style.display = 'none';
 					document.body.classList.remove('blurred');
@@ -278,7 +344,7 @@ function imageVariation() {
 	document.getElementById('overlay').style.display = 'flex';
 	document.body.classList.add('blurred');
 	document.body.classList.add('no-scroll');
-
+	loadingText.innerHTML = 'Bild wird bearbeitet...';
 	jQuery(document).ready(function ($) {
 		$.ajax({
 			url: myAjax.ajaxurl,
@@ -286,6 +352,7 @@ function imageVariation() {
 			data: {
 				action: 'gpt_image_variation',
 				orgBase64: splitarray[1],
+				premium: premium,
 			},
 			success: function (response) {
 				response = response.slice(0, -1);
@@ -330,6 +397,7 @@ function imageVariation() {
 }
 
 function draw() {
+	mergeAndExport();
 	let img = document.getElementById('image-canvas').getContext('2d').canvas;
 	var buffer = document.createElement('canvas');
 	buffer.width = img.width;
@@ -357,6 +425,8 @@ function saveEditedImage() {
 	document.getElementById('overlay').style.display = 'flex';
 	document.body.classList.add('blurred');
 	document.body.classList.add('no-scroll');
+
+	loadingText.innerHTML = 'Bild wird gespeichert...';
 	let image_urls = ['', '', ''];
 	if (document.getElementById('editedImage').src.includes('image.php')) {
 		alert('Bitte erstellen Sie ein bevor Sie es speichern');
