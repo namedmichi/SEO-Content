@@ -95,6 +95,9 @@ nav {
 	but smaller than the li gap */
 	font-size: 1.3em;
 }
+.rightButton {
+	margin-bottom: 8px;
+}
 .rightButton a {
 	color: #afcb08;
 	text-decoration: none;
@@ -200,6 +203,11 @@ nav {
 		width: fit-content;
 	}
 }
+@media only screen and (max-width: 1128px) {
+	.settingsTab .rightButton button {
+		margin-left: 8px !important;
+	}
+}
 @media only screen and (max-width: 960px) {
 	.header {
 		width: 95% !important;
@@ -258,13 +266,14 @@ nav {
 	cursor: pointer;
 }
 .settingsTab button {
-	min-width: 27ch !important;
+	min-width: 35ch !important;
 }
 .settingsTab .rightButton button {
 	margin-left: auto;
 }
 #exportButtonContainer a {
 	text-decoration: none;
+	margin-top: 8px;
 }
 .custom-file-upload {
 	position: relative;
@@ -300,9 +309,9 @@ nav {
 #tokensLeftLable {
 	display: none;
 }
-#apiKey {
-	display: none;
-}
-#apiKeyLabel {
-	display: none;
-}
+/* #apiKey { */
+/* display: none; */
+/* } */
+/* #apiKeyLabel { */
+/* display: none; */
+/* } */

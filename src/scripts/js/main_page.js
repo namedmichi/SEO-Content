@@ -17,8 +17,8 @@ function checkpremium() {
 				action: 'get_tokens',
 			},
 			success: function (response) {
-				let array = JSON.parse(response);
 				try {
+					let array = JSON.parse(response);
 					tokens = array['tokens'];
 					premium = true;
 				} catch (error) {
@@ -28,6 +28,7 @@ function checkpremium() {
 			},
 			error: function (error) {
 				console.log(error);
+				setPremiumfields();
 			},
 		});
 	});
@@ -37,12 +38,19 @@ checkpremium();
 
 function setPremiumfields() {
 	if (premium == true) {
+		let tokenValue = parseInt(tokens, 10).toLocaleString('de-DE');
+		let tokenWorth = (parseInt(tokens, 10) * (50 / 400000)).toFixed(2) + '€';
+
+		let tokenString = tokenValue + ' =  ~' + tokenWorth;
+		console.log(tokenWorth);
+		console.log('Premium');
 		document.getElementById('apiKey').style.display = 'none';
 		document.getElementById('apiKeyLabel').style.display = 'none';
 		document.getElementById('tokensLeft').style.display = 'block';
-		document.getElementById('tokensLeft').textContent = parseInt(tokens, 10).toLocaleString('de-DE');
+		document.getElementById('tokensLeft').textContent = tokenString;
 		document.getElementById('tokensLeftLable').style.display = 'block';
 	} else {
+		console.log('Kein Premium');
 		document.getElementById('apiKey').style.display = 'block';
 		document.getElementById('apiKeyLabel').style.display = 'block';
 	}
@@ -104,6 +112,7 @@ function getSettings() {
 				document.getElementById('whyUs').value = prompts.warumWir;
 				document.getElementById('usps').value = prompts.usps;
 				document.getElementById('cta').value = prompts.cta;
+				document.getElementById('shortcode').value = prompts.shortcode;
 			});
 
 		fetch(homeUrl + '/wp-content/plugins/SEOContent/src/scripts/php/variables.json')
@@ -278,6 +287,9 @@ function importJson(type) {
 	if (type == 'templates') {
 		var file = document.getElementById('templatesFile').files[0];
 	}
+	if (type == 'meta') {
+		var file = document.getElementById('metaTemplateFile').files[0];
+	}
 	if (!file) {
 		alert('Bitte wählen Sie eine Datei aus.');
 		return;
@@ -351,6 +363,25 @@ function importJson(type) {
 				});
 			});
 		}
+		if ((type = 'meta')) {
+			jQuery(document).ready(function ($) {
+				$.ajax({
+					url: myAjax.ajaxurl,
+					method: 'POST',
+					data: {
+						action: 'import_seocontent_template_meta_action',
+						meta: json,
+					},
+					success: function (response) {
+						console.log(response);
+						alertDone();
+					},
+					error: function (error) {
+						console.log(error);
+					},
+				});
+			});
+		}
 	};
 }
 
@@ -371,7 +402,7 @@ function addButtonsToContainer() {
 	templatesButton.href = homeUrl + '/wp-content/plugins/SEOContent/src/scripts/php/templateTest.json'; // Setze den Link auf "#" oder ein anderes Ziel
 	templatesButton.appendChild(document.createTextNode('Vorlagen Exportieren'));
 	templatesButton.className = 'exportButton';
-	templatesButton.download = 'templates.json';
+	templatesButton.download = 'templatesTest.json';
 	container.appendChild(templatesButton);
 
 	// Erstelle den dritten Button für Variablen und füge ihn in ein <a> Tag ein
@@ -381,6 +412,14 @@ function addButtonsToContainer() {
 	variablesButton.download = 'variables.json';
 	variablesButton.className = 'exportButton';
 	container.appendChild(variablesButton);
+
+	// Erstelle den vierten Button für Meta-Daten vorlagen und füge ihn in ein <a> Tag ein
+	var metaButton = document.createElement('a');
+	metaButton.href = homeUrl + '/wp-content/plugins/SEOContent/src/scripts/php/metaPromptTemplates.json'; // Setze den Link auf "#" oder ein anderes Ziel
+	metaButton.appendChild(document.createTextNode('Meta-Daten Vorlagen Exportieren'));
+	metaButton.download = 'metaPromptTemplates.json';
+	metaButton.className = 'exportButton';
+	container.appendChild(metaButton);
 }
 
 function handleDrop(e) {

@@ -8,15 +8,11 @@
             ]
         },
         "Unterordner2": {
-            "Neuer test": [
+            "test": [
                 "Anfangsprompts",
                 "Erstelle einen neuen Titel f\u00fcr den Titel: {title}.Stil:  {stil} .  Antworte nur auf den Prompt. Erkl\u00e4r dich nicht. Schreibe keine Anrede oder H\u00f6flichkeiten.",
                 "Erstelle eine neue Meta-Beschreibung f\u00fcr den Titel: {title}  und Metabeschreibung: {meta}. Benutze folgende Sonderzeichen sinnvoll im Text: {sonderzeichen} .  Stil:  {stil}. Benutze folgende USP\u00b4s wenn angegeben: {usps}. Benutze folgende Call to Action S\u00e4tze: {ctas}  Antworte nur auf den Prompt. Erkl\u00e4r dich nicht. Schreibe keine Anrede oder H\u00f6flichkeiten."
             ]
         }
-    },
-    "test": {
-        "test1": [],
-        "test 2": []
     }
 }

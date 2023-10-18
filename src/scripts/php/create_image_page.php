@@ -58,11 +58,11 @@ function gpt_create_image()
 
     if ($premium == "true") {
         // Logic when $premium is true, diverting to Flask App
-        $url = 'http://94.130.105.89:5000/create_image'; // Replace with your Flask app URL
+        $url = 'http://94.130.105.89/api/create_image'; // Replace with your Flask app URL
         $data = array(
             'prompt' => $prompt,
             "n" => 1,
-            "size" => "1024x1024"
+            "size" => "512x512"
         );
         $jsonData = json_encode($data);
     } else {
@@ -71,7 +71,7 @@ function gpt_create_image()
         $data = array(
             'prompt' => ' ' . $prompt . ' ',
             "n" => 1,
-            "size" => "1024x1024"
+            "size" => "512x512"
         );
         $jsonData = json_encode($data);
     }
@@ -148,7 +148,7 @@ function gpt_image_variation()
 
     if ($premium == "true") {
         // Set cURL options
-        curl_setopt($ch, CURLOPT_URL, "http://94.130.105.89:5000/image_variation");
+        curl_setopt($ch, CURLOPT_URL, "http://94.130.105.89/api/image_variation");
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, array(
@@ -217,7 +217,7 @@ function gpt_edit_image()
     $ch = curl_init();
     if ($premium == "true") {
 
-        curl_setopt($ch, CURLOPT_URL, "http://94.130.105.89:5000/edit_image");
+        curl_setopt($ch, CURLOPT_URL, "http://94.130.105.89/api/edit_image");
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, array(
@@ -322,6 +322,35 @@ function add_image()
         echo $attach_id;
     }
 }
+
+function fetch_image_as_blob()
+{
+
+    $url = isset($_POST['url']) ? $_POST['url'] : '';
+
+    // Initialize a new instance of WP_Http
+    $http = new WP_Http();
+
+    // Fetch the image
+    $response = $http->get($url);
+
+    // Check for WP_Error or if the request was not successful
+    if (is_wp_error($response) || $response['response']['code'] != 200) {
+        echo "fail1";
+        return false;
+    }
+
+    // Return the image body (blob)
+    $image_data = $response['body'];
+    $mime_type = getimagesizefromstring($image_data)['mime'];
+    $base64_encoded = base64_encode($image_data);
+    echo "data:$mime_type;base64,$base64_encoded";
+    wp_die();
+}
+
+
+
+
 add_action('wp_ajax_gpt_create_image', 'gpt_create_image');
 add_action('wp_ajax_nopriv_gpt_create_image', 'gpt_create_image');
 add_action('wp_ajax_add_image', 'add_image');
@@ -330,6 +359,8 @@ add_action('wp_ajax_gpt_edit_image', 'gpt_edit_image');
 add_action('wp_ajax_nopriv_gpt_edit_image', 'gpt_edit_image');
 add_action('wp_ajax_gpt_image_variation', 'gpt_image_variation');
 add_action('wp_ajax_nopriv_gpt_image_variation', 'gpt_image_variation');
+add_action('wp_ajax_fetch_image_as_blob', 'fetch_image_as_blob');
+add_action('wp_ajax_nopriv_fetch_image_as_blob', 'fetch_image_as_blob');
 
 add_action('scriptTest2', 'myAjax');
 function nmd_create_image_callback()
@@ -412,17 +443,20 @@ function nmd_create_image_callback()
 
                             <div class="fakeImage"><img id="nmd_image_1" alt=""></div>
                             <input type="checkbox" name="selectImage" id="selectImage">
+                            <button class="button action" onclick="editImage(1)">Bearbeiten</button>
                         </div>
                         <div class="imageFlexContainer">
 
                             <div class="fakeImage"><img id="nmd_image_2" alt=""></div>
                             <input type="checkbox" name="selectImage" id="selectImage">
+                            <button class="button action" onclick="editImage(2)">Bearbeiten</button>
 
                         </div>
                         <div class="imageFlexContainer">
 
                             <div class="fakeImage"><img id="nmd_image_3" alt=""></div>
                             <input type="checkbox" name="selectImage" id="selectImage">
+                            <button class="button action" onclick="editImage(3)">Bearbeiten</button>
 
                         </div>
                     </div>
@@ -456,6 +490,7 @@ function nmd_create_image_callback()
                     <textarea name="editPrompt" id="editPrompt" cols="30" rows="1" placeholder="Prompt zu bearbeiten"></textarea>
                     <button class="button action" id="submit-button">Inpaint absenden</button>
                     <button class="button action" id="submit-button" onclick="imageVariation()">Variante erstellen(ohne Prompt)</button>
+                    <button class="button action" id="submit-button" onclick="reuseImage()">Erstelltes Bild in die bearbeitung senden</button>
                     <button class="button action" onclick="saveEditedImage()">Bild speichern</button>
                 </div>
             </div>

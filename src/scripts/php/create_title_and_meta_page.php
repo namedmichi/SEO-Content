@@ -59,6 +59,11 @@ function nmd_create_title_and_meta_callback()
     </div>
 
 
+    <div id="overlaySettings" style="display: none;">
+
+    </div>
+
+
     <div class="header">
         <a class="noPaddingMargin" href="<?php echo admin_url('admin.php?page=seo_content.php'); ?>">
 
@@ -132,50 +137,13 @@ function nmd_create_title_and_meta_callback()
                 </div>
             </div>
         </div>
-        <div class="promting">
-
-            <div>
-                <div id="sonderTab" class="tab">
-                    <div style="display: flex;  align-items: center;" onclick="showTab('sonder', 3)">
-                        <h2>Sonderzeichen</h2>
-                        <span id="arrowUp3" style="margin-left: auto; margin-right: 1rem">
-                            <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. -->
-                                <path d="M201.4 137.4c12.5-12.5 32.8-12.5 45.3 0l160 160c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L224 205.3 86.6 342.6c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3l160-160z" />
-                            </svg>
-                        </span>
-                        <span id="arrowDown3" style="margin-left: auto; margin-right: 1rem; display: none;">
-                            <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. -->
-                                <path d="M201.4 342.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 274.7 86.6 137.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z" />
-                            </svg>
-                        </span>
-                    </div>
-                    <div id="sonderContainer" style="display: none;">
-
-
-                        <div class="flex-buttons" id="nmd_special_select">
-                            <div> <button style="border: 1px solid black;" onclick="addSpecialCharacter(this ,'►')">►</button> </div>
-                            <div> <button onclick="addSpecialCharacter(this ,'◄')">◄</button> </div>
-                            <div> <button onclick="addSpecialCharacter(this ,'▲')">▲</button> </div>
-                            <div> <button onclick="addSpecialCharacter(this ,'▼')">▼</button> </div>
-                            <div> <button style="border: 1px solid black;" onclick="addSpecialCharacter(this ,'✓')">✓</button> </div>
-                            <div> <button style="border: 1px solid black;" onclick="addSpecialCharacter(this ,'✅')">✅</button> </div>
-                            <div> <button onclick="addSpecialCharacter(this ,'✘')">✘</button> </div>
-                            <div> <button onclick="addSpecialCharacter(this ,'✚')">✚</button> </div>
-                            <div> <button onclick="addSpecialCharacter(this ,'☆')">☆</button> </div>
-                            <div> <button onclick="addSpecialCharacter(this ,'★')">★</button> </div>
-                            <div> <button onclick="addSpecialCharacter(this ,'✪')">✪</button> </div>
-                            <div> <button onclick="addSpecialCharacter(this ,'♥')">♥</button> </div>
-                            <div> <button onclick="addSpecialCharacter(this ,'☎')">☎</button> </div>
-                            <div> <button onclick="addSpecialCharacter(this ,'✈')">✈</button> </div>
-                            <div> <button onclick="addSpecialCharacter(this ,'☀')">☀</button> </div>
-                            <div> <button onclick="addSpecialCharacter(this ,'☂')">☂</button> </div>
-
-                        </div>
-                    </div>
-                </div>
-
+        <button class="button action" style="width: 100px; margin-top: 8px" onclick="showSettings()">Einstellungen</button>
+        <div class="promting" id="settingsOverlay">
+            <div style="margin-left: auto; cursor: pointer; width: fit-content;">
+                <svg style="margin-left: auto; cursor: pointer" onclick="closeSettings()" xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 384 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. -->
+                    <path d="M376.6 84.5c11.3-13.6 9.5-33.8-4.1-45.1s-33.8-9.5-45.1 4.1L192 206 56.6 43.5C45.3 29.9 25.1 28.1 11.5 39.4S-3.9 70.9 7.4 84.5L150.3 256 7.4 427.5c-11.3 13.6-9.5 33.8 4.1 45.1s33.8 9.5 45.1-4.1L192 306 327.4 468.5c11.3 13.6 31.5 15.4 45.1 4.1s15.4-31.5 4.1-45.1L233.7 256 376.6 84.5z" />
+                </svg>
             </div>
-
             <div>
                 <div id="titleTab" class="tab">
                     <div style="display: flex;  align-items: center;" onclick="showTab('title', 1)">
@@ -191,7 +159,7 @@ function nmd_create_title_and_meta_callback()
                             </svg>
                         </span>
                     </div>
-                    <div id="titleContainer" style="display: none;">
+                    <div id="titleContainer" style="display: block;">
 
                         <h4>Anweisung für KI</h4>
                         <textarea name="promtTitel" id="promtTitel" cols="40" rows="6" style="resize: none;"><?php echo $prompts['newTitlePrompt'] ?></textarea>
@@ -215,7 +183,7 @@ function nmd_create_title_and_meta_callback()
                             </svg>
                         </span>
                     </div>
-                    <div id="metaContainer" style="display: none;">
+                    <div id="metaContainer" style="display: block;">
                         <h4>Anweisung für KI</h4>
                         <textarea name="promtMeta" id="promtMeta" cols="40" rows="6" style="resize: none;"><?php echo $prompts['newMetaPrompt'] ?></textarea>
 
@@ -223,6 +191,9 @@ function nmd_create_title_and_meta_callback()
                 </div>
 
             </div>
+
+
+
             <div>
                 <div id="templateTab" class="tab">
                     <div style="display: flex;  align-items: center;" onclick="showTab('template', 3)">
@@ -238,7 +209,7 @@ function nmd_create_title_and_meta_callback()
                             </svg>
                         </span>
                     </div>
-                    <div id="templateContainer" class="templateContainer" style="display: none;">
+                    <div id="templateContainer" class="templateContainer" style="display: block;">
 
                         <!-- <button class="button button-primary" onclick="template_default()">Templates Zurücksetzen</button> -->
                         <?php
@@ -322,33 +293,36 @@ function nmd_create_title_and_meta_callback()
                         //     echo '</div>';
                         // }
                         ?>
-                        <div class="alignMiddle">
-                            <label for="template_name">Name: </label>
-                            <textarea name="template_name" id="template_name" cols="30" rows="1"></textarea>
-                        </div>
-                        <br>
-                        <div class="alignMiddle">
-                            <label for="template_description">Beschreibung: </label>
-                            <textarea name="template_description" id="template_description" cols="30" rows="1"></textarea>
-                        </div>
-                        <br>
-                        <div class="alignMiddle">
 
-                            <label for="unterordner_select">Unterordner:;</label>
-                            <select style="margin-left: auto;" name="unterordner_select" id="unterordner_select">
+                        <label for="template_name">Name: </label>
+                        <br>
+                        <textarea name="template_name" id="template_name" cols="30" rows="1"></textarea>
 
-                                <?php
-                                foreach ($metaPromptTemplates as $index => $element) {
-                                    $lastFolder = $index;
-                                    foreach ($element as $index => $element) {
-                                        echo '<option value="' . $index . ',' . $lastFolder . '">' . $lastFolder . ': ' . $index . '</option>';
-                                    }
+                        <br>
+
+                        <label for="template_description">Beschreibung: </label>
+                        <br>
+                        <textarea name="template_description" id="template_description" cols="30" rows="1"></textarea>
+
+                        <br>
+
+
+                        <label for="unterordner_select">Unterordner:;</label>
+                        <br>
+                        <select name="unterordner_select" id="unterordner_select">
+
+                            <?php
+                            foreach ($metaPromptTemplates as $index => $element) {
+                                $lastFolder = $index;
+                                foreach ($element as $index => $element) {
+                                    echo '<option value="' . $index . ',' . $lastFolder . '">' . $lastFolder . ': ' . $index . '</option>';
                                 }
-                                ?>
-                            </select>
-                        </div>
+                            }
+                            ?>
+                        </select>
+
                         <br>
-                        <button class="button button-primary" onclick="save_template()">Speichern</button>
+                        <button style="margin-top: 8px;" class="button button-primary" onclick="save_template()">Speichern</button>
                         <div id="folderTab" class="tab subTab" style="margin-bottom: 0;">
                             <div style="display: flex;  align-items: center;" onclick="showTab('folder', 8)">
                                 <h3>Neuen Ordner erstellen</h3>
@@ -365,10 +339,11 @@ function nmd_create_title_and_meta_callback()
                             </div>
                             <div id="folderContainer" style="display: none;">
 
-                                <div class="alignMiddle">
-                                    <label for="folder_name">Name:</label>
-                                    <textarea name="folder_name" id="folder_name" cols="30" rows="1"></textarea>
-                                </div>
+
+                                <label for="folder_name">Name:</label>
+                                <br>
+                                <textarea style="margin-top:8px" name="folder_name" id="folder_name" cols="30" rows="1"></textarea>
+
                                 <br>
                                 <button class="button button-primary" onclick="createFolder()">Ordner erstellen</button>
                                 <br>
@@ -392,22 +367,24 @@ function nmd_create_title_and_meta_callback()
                                 </span>
                             </div>
                             <div id="subFolderContainer" style="display: none;">
-                                <div class="alignMiddle">
 
-                                    <label for="folder_select">Überordner: &nbsp;&nbsp;</label>
-                                    <select name="folder_select" id="folder_select" style="margin-left: auto;">
-                                        <?php
-                                        foreach ($metaPromptTemplates as $index => $element) {
-                                            echo '<option value="' . $index . '">' . $index . '</option>';
-                                        }
-                                        ?>
-                                    </select>
-                                </div>
+
+                                <label for="folder_select">Überordner: &nbsp;&nbsp;</label>
                                 <br>
-                                <div class="alignMiddle">
-                                    <label for="subFolder_name">Name:</label>
-                                    <textarea name="subFolder_name" id="subFolder_name" cols="30" rows="1"></textarea>
-                                </div>
+                                <select style="margin-top:8px" name="folder_select" id="folder_select" style="margin-left: auto;">
+                                    <?php
+                                    foreach ($metaPromptTemplates as $index => $element) {
+                                        echo '<option value="' . $index . '">' . $index . '</option>';
+                                    }
+                                    ?>
+                                </select>
+
+                                <br>
+
+                                <label for="subFolder_name">Name:</label>
+                                <br>
+                                <textarea style="margin-top:8px" name="subFolder_name" id="subFolder_name" cols="30" rows="1"></textarea>
+
                                 <br>
                                 <button class="button button-primary" onclick="createSubFolder()">Unterordner erstellen</button>
 
@@ -420,7 +397,68 @@ function nmd_create_title_and_meta_callback()
                     </div>
                 </div>
             </div>
+            <div>
+                <div id="sonderTab" class="tab">
+                    <div style="display: flex;  align-items: center;" onclick="showTab('sonder', 3)">
+                        <h2>Sonderzeichen</h2>
+                        <span id="arrowUp3" style="margin-left: auto; margin-right: 1rem">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. -->
+                                <path d="M201.4 137.4c12.5-12.5 32.8-12.5 45.3 0l160 160c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L224 205.3 86.6 342.6c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3l160-160z" />
+                            </svg>
+                        </span>
+                        <span id="arrowDown3" style="margin-left: auto; margin-right: 1rem; display: none;">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. -->
+                                <path d="M201.4 342.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 274.7 86.6 137.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z" />
+                            </svg>
+                        </span>
+                    </div>
+                    <div id="sonderContainer" style="display: block;">
 
+
+                        <div class="flex-buttons" id="nmd_special_select">
+                            <div> <button style="border: 1px solid black;" onclick="addSpecialCharacter(this ,'►')">►</button> </div>
+                            <div> <button onclick="addSpecialCharacter(this ,'◄')">◄</button> </div>
+                            <div> <button onclick="addSpecialCharacter(this ,'▲')">▲</button> </div>
+                            <div> <button onclick="addSpecialCharacter(this ,'▼')">▼</button> </div>
+                            <div> <button style="border: 1px solid black;" onclick="addSpecialCharacter(this ,'✓')">✓</button> </div>
+                            <div> <button style="border: 1px solid black;" onclick="addSpecialCharacter(this ,'✅')">✅</button> </div>
+                            <div> <button onclick="addSpecialCharacter(this ,'✘')">✘</button> </div>
+                            <div> <button onclick="addSpecialCharacter(this ,'✚')">✚</button> </div>
+                            <div> <button onclick="addSpecialCharacter(this ,'☆')">☆</button> </div>
+                            <div> <button onclick="addSpecialCharacter(this ,'★')">★</button> </div>
+                            <div> <button onclick="addSpecialCharacter(this ,'✪')">✪</button> </div>
+                            <div> <button onclick="addSpecialCharacter(this ,'♥')">♥</button> </div>
+                            <div> <button onclick="addSpecialCharacter(this ,'☎')">☎</button> </div>
+                            <div> <button onclick="addSpecialCharacter(this ,'✈')">✈</button> </div>
+                            <div> <button onclick="addSpecialCharacter(this ,'☀')">☀</button> </div>
+                            <div> <button onclick="addSpecialCharacter(this ,'☂')">☂</button> </div>
+                            <div> <button onclick="addSpecialCharacter(this,'😊')">😊</button> </div>
+                            <div> <button onclick="addSpecialCharacter(this,'🌟')">🌟</button> </div>
+                            <div> <button onclick="addSpecialCharacter(this,'🚀')">🚀</button> </div>
+                            <div> <button onclick="addSpecialCharacter(this,'🌺')">🌺</button> </div>
+                            <div> <button onclick="addSpecialCharacter(this,'🤩')">🤩</button> </div>
+                            <div> <button onclick="addSpecialCharacter(this,'🍕')">🍕</button> </div>
+                            <div> <button onclick="addSpecialCharacter(this,'🎉')">🎉</button> </div>
+                            <div> <button onclick="addSpecialCharacter(this,'🎈')">🎈</button> </div>
+                            <div> <button onclick="addSpecialCharacter(this,'🍦')">🍦</button> </div>
+                            <div> <button onclick="addSpecialCharacter(this,'🎂')">🎂</button> </div>
+                            <div> <button onclick="addSpecialCharacter(this,'🍺')">🍺</button> </div>
+                            <div> <button onclick="addSpecialCharacter(this,'🍸')">🍸</button> </div>
+                            <div> <button onclick="addSpecialCharacter(this,'🌈')">🌈</button> </div>
+                            <div> <button onclick="addSpecialCharacter(this,'📚')">📚</button> </div>
+                            <div> <button onclick="addSpecialCharacter(this,'🖋')">🖋</button> </div>
+                            <div> <button onclick="addSpecialCharacter(this,'🖼')">🖼</button> </div>
+                            <div> <button onclick="addSpecialCharacter(this,'🎸')">🎸</button> </div>
+                            <div> <button onclick="addSpecialCharacter(this,'🎮')">🎮</button> </div>
+                            <div> <button onclick="addSpecialCharacter(this,'🚗')">🚗</button> </div>
+
+
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
 
         <table>
@@ -435,7 +473,7 @@ function nmd_create_title_and_meta_callback()
 
                         <input style="margin-left: 1px;" id="cb-select-all" type="checkbox" name="post[]" value="" onclick="selectAll()">
                     </td>
-                    <td class="firstTd" style="display: flex;justify-content: center;">
+                    <td class="firstTd tdHeading" style="display: flex;justify-content: center;">
                         Alte Daten
                     </td>
                     <td class="secondTd" style="display: flex;justify-content: center;">

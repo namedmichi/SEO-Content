@@ -16,7 +16,7 @@
  * Plugin Name:       SEO Content
  * Plugin URI:        https://www.seo-kueche.de
  * Description:       KI-gestütztes Plugin zur automatisierten Erstellung von SEO-konformen Inhalten und Meta-Daten.
- * Version:           1.0.4
+ * Version:           1.0.5
  * Author:            SEO Küche
  * Author URI:        https://www.seo-kueche.de
  * License:           GPL-2.0+
@@ -317,29 +317,44 @@ add_action('update_seocontent_variables_hook', 'update_seocontent_variables');
 
 function import_seocontent_template()
 {
+
 	$templates  = isset($_POST['templates']) ? $_POST['templates'] : '';
 
 	$json_file_path = plugin_dir_path(__FILE__) . 'src/scripts/php/templateTest.json';
 
-
-	file_put_contents($json_file_path, $templates);
+	$jsonData = json_encode($templates, JSON_PRETTY_PRINT);
+	file_put_contents($json_file_path, $jsonData);
 
 	update_option('seocontent_templates', $templates);
+	wp_die();
 }
 
-// Füge deine benutzerdefinierte Hook zu WordPress hinzu
-add_action('import_seocontent_templates_hook', 'import_seocontent_template');
 
-add_action('wp_ajax_import_seocontent_settings_action', 'import_seocontent_template_action');
-add_action('wp_ajax_nopriv_import_seocontent_template_action', 'import_seocontent_template_action'); // Für nicht angemeldete Benutzer
 
-function import_seocontent_template_action()
+add_action('wp_ajax_import_seocontent_template_action', 'import_seocontent_template');
+add_action('wp_ajax_nopriv_import_seocontent_template_action', 'import_seocontent_template'); // Für nicht angemeldete Benutzer
+
+
+function import_seocontent_template_meta()
 {
-	// Führe die benutzerdefinierte Hook aus
-	do_action('import_seocontent_templates_hook');
 
-	wp_die(); // Beende die AJAX-Anfrage
+	$meta  = isset($_POST['meta']) ? $_POST['meta'] : '';
+
+	$json_file_path = plugin_dir_path(__FILE__) . 'src/scripts/php/metaPromptTemplates.json';
+
+	$jsonData = json_encode($meta, JSON_PRETTY_PRINT);
+	file_put_contents($json_file_path, $jsonData);
+
+	update_option('seocontent_templates_meta', $meta);
+	wp_die();
 }
+
+
+
+add_action('wp_ajax_import_seocontent_template_meta_action', 'import_seocontent_template_meta');
+add_action('wp_ajax_nopriv_import_seocontent_template_meta_action', 'import_seocontent_template_meta'); // Für nicht angemeldete Benutzer
+
+
 
 add_action('wp_ajax_update_seocontent_settings_action', 'update_seocontent_settings_action');
 add_action('wp_ajax_nopriv_update_seocontent_settings_action', 'update_seocontent_settings_action'); // Für nicht angemeldete Benutzer
@@ -523,6 +538,8 @@ function run_SEOContent()
 	$plugin = new SEOContent();
 	$plugin->run();
 }
+
+
 
 run_SEOContent();
 wp_localize_script('mylib', 'WPURLS', array('siteurl' => get_option('siteurl')));

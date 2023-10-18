@@ -57,6 +57,7 @@ button {
 	padding: 8px;
 	margin-top: 8px;
 	margin-left: 8px;
+	width: 624px;
 }
 .tab h2 {
 	padding: 4px;
@@ -79,9 +80,23 @@ button {
 	display: flex;
 }
 .promting {
+	padding: 16px;
+	position: absolute;
+	flex-direction: column;
+	top: 21%;
+	left: 28%;
+	flex-wrap: wrap;
+	max-width: 749px;
 	display: flex;
+	background-color: white;
+	box-shadow: 0 1rem 3rem rgba(23, 27, 31, 0.15);
+	display: none;
+	z-index: 55555;
 }
-
+.promting textarea {
+	width: 82ch;
+	resize: vertical !important;
+}
 h4 {
 	margin-top: 0 !important;
 }
@@ -128,7 +143,6 @@ td {
 .flex-buttons {
 	display: flex;
 	flex-wrap: wrap;
-	max-width: 200px;
 }
 .flex-buttons button {
 	width: 40px;
@@ -300,13 +314,47 @@ a {
 	.secondTd {
 		margin-left: 46px !important;
 	}
+	.tdHeading {
+		padding-left: 82px;
+	}
 }
 
+@media only screen and (max-width: 3000px) {
+	.promting {
+		left: 37%;
+	}
+}
+@media only screen and (max-width: 2300px) {
+	.promting {
+		left: 32%;
+	}
+}
 @media only screen and (max-width: 1385px) {
 	.topTitle {
 		display: flex;
 		flex-direction: column;
 		align-items: start;
+	}
+	.tdHeading {
+		padding-left: 90px;
+	}
+	.promting {
+		left: 24%;
+	}
+}
+@media only screen and (max-width: 1200px) {
+	.promting {
+		left: 17%;
+	}
+}
+@media only screen and (max-width: 1100px) {
+	.promting {
+		left: 14%;
+	}
+}
+@media only screen and (max-width: 900px) {
+	.promting {
+		left: 9%;
 	}
 }
 .template {
@@ -353,6 +401,7 @@ a {
 	background-color: rgba(119, 119, 119, 0.151);
 	cursor: pointer;
 	margin-bottom: 1rem;
+	width: 624px;
 }
 .folderHeaderFlex {
 	display: flex;
@@ -511,7 +560,24 @@ a {
 	top: 0;
 	left: 0;
 	width: 100%;
-	height: 100%;
+	height: 1201px;
+	background-color: rgba(0, 0, 0, 0.4);
+	/* Semi-transparent black overlay */
+	z-index: 9999;
+	/* Ensure the overlay is on top of other elements */
+	pointer-events: auto;
+	/* Enable click events on the overlay */
+}
+#overlaySettings {
+	display: none;
+	position: absolute;
+	justify-content: center;
+
+	/* align-items: center; */
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 1701px;
 	background-color: rgba(0, 0, 0, 0.4);
 	/* Semi-transparent black overlay */
 	z-index: 9999;

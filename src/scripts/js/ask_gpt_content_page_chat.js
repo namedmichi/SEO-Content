@@ -7,6 +7,7 @@ var title;
 var abschnitte;
 var ueberschriften;
 var inhaltCount;
+let templateList;
 var var_prompt = '';
 var promptList;
 let loadingText = document.getElementById('loadingText');
@@ -29,8 +30,8 @@ function checkpremium() {
 				action: 'get_tokens',
 			},
 			success: function (response) {
-				let array = JSON.parse(response);
 				try {
+					let array = JSON.parse(response);
 					tokens = array['tokens'];
 					premium = true;
 				} catch (error) {
@@ -40,6 +41,7 @@ function checkpremium() {
 			},
 			error: function (error) {
 				console.log(error);
+				setPremiumfields();
 			},
 		});
 	});
@@ -79,7 +81,10 @@ request.onreadystatechange = function () {
 		// Save the JSON data to a variable
 		const jsonData = json;
 		promptList = jsonData;
-
+		document.getElementById('title_prompt').value = promptList['titlePrompt'];
+		document.getElementById('abschnitte_prompt').value = promptList['ueberschriftenPrompt'];
+		document.getElementById('inhalt_prompt').value = promptList['inhaltPrompt'];
+		document.getElementById('excerp_prompt').value = promptList['excerpPrompt'];
 		// Use the jsonData variable as needed
 		console.log(jsonData);
 		chat = [
@@ -90,8 +95,28 @@ request.onreadystatechange = function () {
 		];
 	}
 };
-
 request.send();
+
+const request3 = new XMLHttpRequest();
+
+var jsonUrl = homeUrl + '/wp-content/plugins/SEOContent/src/scripts/php/templateTest.json'; // Replace with the actual URL of your JSON file
+request3.open('GET', jsonUrl, true);
+request3.onreadystatechange = function () {
+	if (request3.readyState === 4 && request3.status === 200) {
+		// Parse the JSON response
+		const json = JSON.parse(request3.responseText);
+
+		// Save the JSON data to a variable
+		const jsonData = json;
+		templateList = jsonData;
+
+		// Use the jsonData variable as needed
+		console.log(jsonData);
+	}
+};
+
+request3.send();
+
 var settingsArray;
 const request2 = new XMLHttpRequest();
 var jsonUrl = homeUrl + '/wp-content/plugins/SEOContent/src/scripts/php/settings.json'; // Replace with the actual URL of your JSON file
@@ -115,34 +140,14 @@ request2.send();
 
 function get_template(folder, subFolder, name) {
 	console.log(name);
-	jQuery(document).ready(function ($) {
-		$.ajax({
-			url: myAjax.ajaxurl,
-			method: 'POST',
-			data: {
-				action: 'get_template',
-			},
-			success: function (response) {
-				response = response.substring(0, response.length - 1);
-
-				console.log(response);
-				const prompts = JSON.parse(response);
-
-				document.getElementById('template_name').value = name;
-				document.getElementById('template_description').value = prompts[folder][subFolder][name][0];
-				document.getElementById('title_prompt').value = prompts[folder][subFolder][name][1];
-				document.getElementById('abschnitte_prompt').value = prompts[folder][subFolder][name][2];
-				document.getElementById('inhalt_prompt').value = prompts[folder][subFolder][name][3];
-				document.getElementById('excerp_prompt').value = prompts[folder][subFolder][name][4];
-				document.getElementById('nmd_stil_select').value = prompts[folder][subFolder][name][5];
-				document.getElementById('nmd_ton_select').value = prompts[folder][subFolder][name][6];
-				document.getElementById('nmd_typ_select').value = prompts[folder][subFolder][name][7];
-			},
-			error: function (error) {
-				console.log(error);
-			},
-		});
-	});
+	document.getElementById('template_name').value = name;
+	document.getElementById('template_description').value = templateList[folder][subFolder][name][0];
+	document.getElementById('title_prompt').value = templateList[folder][subFolder][name][1];
+	document.getElementById('abschnitte_prompt').value = templateList[folder][subFolder][name][2];
+	document.getElementById('inhalt_prompt').value = templateList[folder][subFolder][name][3];
+	document.getElementById('excerp_prompt').value = templateList[folder][subFolder][name][4];
+	document.getElementById('nmd_stil_select').value = templateList[folder][subFolder][name][5];
+	document.getElementById('nmd_typ_select').value = templateList[folder][subFolder][name][7];
 }
 
 function save_template() {

@@ -364,7 +364,7 @@ function get_keyword_api()
 
     $topic = isset($_POST['topic']) ? $_POST['topic'] : '';
 
-    $url = 'http://94.130.105.89:5000/getKeyword';
+    $url = 'http://94.130.105.89/api/getKeyword';
 
     // Data to be sent in the body of the POST request
     $data = array(
@@ -403,7 +403,7 @@ function get_best_keyword_api()
 {
     $urlArray = isset($_POST['urlArray']) ? $_POST['urlArray'] : '';
 
-    $url = 'http://94.130.105.89:5000/get_best_keyword';
+    $url = 'http://94.130.105.89/api/get_best_keyword';
 
     // Data to be sent in the body of the POST request
     $data = array(
@@ -444,7 +444,7 @@ function askGPT()
     $model = isset($_POST['model']) ? $_POST['model'] : '';
     $temperature = isset($_POST['temperature']) ? $_POST['temperature'] : '';
     // API URL for the POST request
-    $url = 'http://94.130.105.89:5000/chat';
+    $url = 'http://94.130.105.89/api/chat';
 
     // Data to be sent in the body of the POST request
     $data = array(
@@ -486,7 +486,7 @@ function getTokens()
 {
 
     // API URL for the GET request
-    $url = 'http://94.130.105.89:5000/get_tokens';
+    $url = 'http://94.130.105.89/api/get_tokens';
 
     // Initialize cURL session
     $ch = curl_init($url);
@@ -538,7 +538,7 @@ add_action('wp_ajax_get_best_keyword_api', 'get_best_keyword_api');
 add_action('wp_ajax_nopriv_get_best_keyword_api', 'get_best_keyword_api');
 
 /*
- * Aktionen für Ajax Requests von anderen Seiten. (Workaround da nicht möglich in anderer Datei) 
+ * Aktionen für Ajax Requests von anderen Seiten. 
  */
 add_action('wp_ajax_get_main_settings', 'get_main_settings');
 add_action('wp_ajax_nopriv_get_main_settings', 'get_main_settings');

@@ -12,7 +12,7 @@ function getHomeUrl() {
 homeUrl = getHomeUrl();
 const request = new XMLHttpRequest();
 var jsonUrl = homeUrl + '/wp-content/plugins/SEOContent/src/scripts/php/prompts.json'; // Replace with the actual URL of your JSON file
-
+let metaTemplateList;
 let warns = document.getElementsByClassName('notice-warning');
 
 for (let i = 0; i < warns.length; i++) {
@@ -56,6 +56,8 @@ request.onreadystatechange = function () {
 		// Save the JSON data to a variable
 		const jsonData = json;
 		promptList = jsonData;
+		document.getElementById('promtTitel').value = promptList['newTitlePrompt'];
+		document.getElementById('promtMeta').value = promptList['newMetaPrompt'];
 
 		// Use the jsonData variable as needed
 		console.log(jsonData);
@@ -83,6 +85,27 @@ request2.onreadystatechange = function () {
 };
 
 request2.send();
+
+const request3 = new XMLHttpRequest();
+
+var jsonUrl = homeUrl + '/wp-content/plugins/SEOContent/src/scripts/php/metaPromptTemplates.json'; // Replace with the actual URL of your JSON file
+request3.open('GET', jsonUrl, true);
+request3.onreadystatechange = function () {
+	if (request3.readyState === 4 && request3.status === 200) {
+		// Parse the JSON response
+		const json = JSON.parse(request3.responseText);
+
+		// Save the JSON data to a variable
+		const jsonData = json;
+		metaTemplateList = jsonData;
+
+		// Use the jsonData variable as needed
+		console.log(jsonData);
+	}
+};
+
+request3.send();
+
 async function getAllPages(type) {
 	setLoadingScreen();
 	loadingText.innerHTML = 'Lade Seiten...';
@@ -824,9 +847,9 @@ function get_template(folder, subFolder, name) {
 				const prompts = JSON.parse(response);
 
 				document.getElementById('template_name').value = name;
-				document.getElementById('template_description').value = prompts[folder][subFolder][name][0];
-				document.getElementById('promtTitel').value = prompts[folder][subFolder][name][1];
-				document.getElementById('promtMeta').value = prompts[folder][subFolder][name][2];
+				document.getElementById('template_description').value = metaTemplateList[folder][subFolder][name][0];
+				document.getElementById('promtTitel').value = metaTemplateList[folder][subFolder][name][1];
+				document.getElementById('promtMeta').value = metaTemplateList[folder][subFolder][name][2];
 			},
 			error: function (error) {
 				console.log(error);
@@ -1060,4 +1083,12 @@ function setLoadingScreen() {
 function removeLoadingScreen() {
 	document.getElementById('overlay').style.display = 'none';
 	document.body.classList.remove('blurred');
+}
+function showSettings() {
+	document.getElementById('settingsOverlay').style.display = 'block';
+	document.getElementById('overlaySettings').style.display = 'block';
+}
+function closeSettings() {
+	document.getElementById('settingsOverlay').style.display = 'none';
+	document.getElementById('overlaySettings').style.display = 'none';
 }

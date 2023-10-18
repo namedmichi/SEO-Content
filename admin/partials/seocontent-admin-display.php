@@ -137,6 +137,13 @@ do_action('scriptTest4');
                                 <h3>Meta-Daten</h3>
                             </div>
                         </a>
+                        <a target="_blank" href="https://www.seo-kueche.de/seo-content-plugin/#kaufen">
+
+                            <div class="servicesCard">
+                                <img src="<?php echo content_url() ?>\plugins\SEOContent\src\assets\bezahlen.png" alt="meta" class="serviceIcon">
+                                <h3>Token kaufen</h3>
+                            </div>
+                        </a>
 
                     </div>
                     <div class="rightButton">
@@ -166,7 +173,7 @@ do_action('scriptTest4');
                             </a>
                         </label>
                         <input type="text" name="apiKey" id="apiKey">
-                        <p id="tokensLeftLable" for="tokensLeft">Verbliebene Tokens:</p>
+                        <h3 id="tokensLeftLable" for="tokensLeft">Verbliebene Tokens:</h3>
                         <span id="tokensLeft"></span>
 
                         <h3>Unternehmenseinstellungen</h3>
@@ -207,8 +214,8 @@ do_action('scriptTest4');
                     <div class="settingsTab" id="exportSettingsTab" style="display: none;">
                         <div class="rightButton" style="display: flex;">
                             <div class="custom-file-upload" id="drop-area">
-                                <label for="templatesFile" class="custom-file-label">Datei ziehen oder klicken</label>
-                                <input type="file" name="file" id="templatesFile" accept=".json">
+                                <label for="settingsFile" class="custom-file-label">Datei ziehen oder klicken</label>
+                                <input type="file" name="file" id="settingsFile" accept=".json">
                             </div>
                             <p id="settingsFileText"></p>
 
@@ -226,11 +233,20 @@ do_action('scriptTest4');
                         <br>
                         <div class="rightButton" style="display: flex;" id="drop-area-variables">
                             <div class="custom-file-upload">
-                                <label for="templatesFile" class="custom-file-label">Datei ziehen oder klicken</label>
-                                <input type="file" name="file" id="templatesFile" accept=".json">
+                                <label for="variablesFile" class="custom-file-label">Datei ziehen oder klicken</label>
+                                <input type="file" name="file" id="variablesFile" accept=".json">
                             </div>
                             <p id="variablesFileText"></p>
                             <button onclick="importJson('variables')">Variablen importieren</button>
+                        </div>
+                        <br>
+                        <div class="rightButton" style="display: flex;" id="drop-area-variables">
+                            <div class="custom-file-upload">
+                                <label for="metaTemplateFile" class="custom-file-label">Datei ziehen oder klicken</label>
+                                <input type="file" name="file" id="metaTemplateFile" accept=".json">
+                            </div>
+                            <p id="variablesFileText"></p>
+                            <button onclick="importJson('meta')">Meta-Daten Vorlagen importieren</button>
                         </div>
                         <br>
                         <div id="exportButtonContainer" style="padding-bottom: 20px;">

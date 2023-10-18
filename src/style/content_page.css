@@ -43,7 +43,9 @@
 	position: absolute;
 	right: 20px;
 	top: 20px;
+	cursor: pointer;
 }
+
 .keywordDiv {
 	padding: 8px;
 	position: relative;
@@ -438,10 +440,10 @@ input {
 	display: flex;
 	position: absolute;
 	background-color: white;
-	width: 270px;
+	width: 296px;
 	height: 270px;
 	top: -85px;
-	left: -96px;
+	left: -108px;
 	z-index: -1;
 	justify-content: center;
 	box-shadow: 0 1rem 3rem rgba(23, 27, 31, 0.15);

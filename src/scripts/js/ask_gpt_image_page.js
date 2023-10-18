@@ -28,8 +28,8 @@ function checkpremium() {
 				action: 'get_tokens',
 			},
 			success: function (response) {
-				let array = JSON.parse(response);
 				try {
+					let array = JSON.parse(response);
 					tokens = array['tokens'];
 					premium = 'true';
 				} catch (error) {
@@ -422,9 +422,7 @@ function setLoadingTest() {
 	document.body.classList.add('blurred');
 }
 function saveEditedImage() {
-	document.getElementById('overlay').style.display = 'flex';
-	document.body.classList.add('blurred');
-	document.body.classList.add('no-scroll');
+	setLoadingScreen();
 
 	loadingText.innerHTML = 'Bild wird gespeichert...';
 	let image_urls = ['', '', ''];
@@ -445,18 +443,129 @@ function saveEditedImage() {
 			},
 			success: function (response) {
 				console.log(response);
-				document.getElementById('overlay').style.display = 'none';
-				document.body.classList.remove('blurred');
-				document.body.classList.remove('no-scroll');
+				removeLoadingScreen();
 
 				alert('Bilder wurden erfolgreich hinzugefügt. Sie können sie nun in der Mediathek finden.');
 			},
 			error: function (error) {
 				console.log(error);
-				document.getElementById('overlay').style.display = 'none';
-				document.body.classList.remove('blurred');
-				document.body.classList.remove('no-scroll');
+				removeLoadingScreen();
 			},
 		});
 	});
+}
+function editImage(n) {
+	loadingText.innerHTML = 'Bild wird geladen...';
+	let url = document.getElementById('nmd_image_' + n).src;
+	if (url == '' || url == undefined || url == null) {
+		alert('Bitte erstellen Sie erst ein Bild');
+		return;
+	}
+	setLoadingScreen();
+	console.log(url);
+	jQuery(document).ready(function ($) {
+		$.ajax({
+			url: myAjax.ajaxurl,
+			type: 'POST',
+			data: {
+				action: 'fetch_image_as_blob',
+				url: url,
+			},
+			success: function (response) {
+				console.log(response);
+				let blob = dataURLtoBlob(response);
+				const reader = new FileReader();
+				reader.onload = function (e) {
+					const img = new Image();
+					img.src = e.target.result;
+					img.onload = function () {
+						imageCanvas.width = img.width;
+						imageCanvas.height = img.height;
+						imageCanvasHidden.width = img.width;
+						imageCanvasHidden.height = img.height;
+						tempCanvas.width = img.width;
+						tempCanvas.height = img.height;
+						orgImage = img;
+						ctx.drawImage(img, 0, 0, img.width, img.height);
+						orgFile = imageCanvas.toDataURL('image/png');
+						removeLoadingScreen();
+					};
+				};
+				reader.readAsDataURL(blob);
+			},
+			error: function (error) {
+				console.log(error);
+				removeLoadingScreen();
+			},
+		});
+	});
+}
+
+function reuseImage() {
+	loadingText.innerHTML = 'Bild wird geladen...';
+	url = document.getElementById('editedImage').src;
+	if (url == '' || url == undefined || url == null) {
+		alert('Bitte erstellen Sie erst ein Bild');
+		return;
+	}
+	setLoadingScreen();
+	console.log(url);
+	jQuery(document).ready(function ($) {
+		$.ajax({
+			url: myAjax.ajaxurl,
+			type: 'POST',
+			data: {
+				action: 'fetch_image_as_blob',
+				url: url,
+			},
+			success: function (response) {
+				console.log(response);
+				let blob = dataURLtoBlob(response);
+				const reader = new FileReader();
+				reader.onload = function (e) {
+					const img = new Image();
+					img.src = e.target.result;
+					img.onload = function () {
+						imageCanvas.width = img.width;
+						imageCanvas.height = img.height;
+						imageCanvasHidden.width = img.width;
+						imageCanvasHidden.height = img.height;
+						tempCanvas.width = img.width;
+						tempCanvas.height = img.height;
+						orgImage = img;
+						ctx.drawImage(img, 0, 0, img.width, img.height);
+						orgFile = imageCanvas.toDataURL('image/png');
+						removeLoadingScreen();
+					};
+				};
+				reader.readAsDataURL(blob);
+			},
+			error: function (error) {
+				console.log(error);
+				removeLoadingScreen();
+			},
+		});
+	});
+}
+
+function dataURLtoBlob(dataurl) {
+	let arr = dataurl.split(','),
+		mime = arr[0].match(/:(.*?);/)[1];
+	let byteString = atob(arr[1]);
+	let n = byteString.length;
+	let u8arr = new Uint8Array(n);
+
+	while (n--) {
+		u8arr[n] = byteString.charCodeAt(n);
+	}
+
+	return new Blob([u8arr], { type: mime });
+}
+function setLoadingScreen() {
+	document.getElementById('overlay').style.display = 'flex';
+	document.body.classList.add('blurred');
+}
+function removeLoadingScreen() {
+	document.getElementById('overlay').style.display = 'none';
+	document.body.classList.remove('blurred');
 }
