@@ -153,6 +153,7 @@ function gpt_image_variation()
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, array(
             'image' => new CURLFile($image_path),
+            "size" => "512x512",
         ));
 
         // Execute cURL session and handle response
@@ -167,6 +168,7 @@ function gpt_image_variation()
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, array(
             'image' => new CURLFile($image_path),
+            "size" => "512x512",
 
         ));
         $path = ABSPATH . 'wp-content/plugins/SEOContent/src/scripts/php/settings.json';
@@ -224,6 +226,7 @@ function gpt_edit_image()
             'image' => new CURLFile($image_path),
             'mask' => new CURLFile($mask_path),
             'prompt' => $prompt,
+            "size" => "512x512",
         ));
 
         $result = curl_exec($ch);
@@ -241,6 +244,7 @@ function gpt_edit_image()
             'image' => new CURLFile($image_path),
             'mask' => new CURLFile($mask_path),
             'prompt' => $prompt,
+            "size" => "512x512",
 
         ));
         $path = ABSPATH . 'wp-content/plugins/SEOContent/src/scripts/php/settings.json';
@@ -428,7 +432,6 @@ function nmd_create_image_callback()
                                 <option value="2">2</option>
                                 <option value="3">3</option>
                             </select>
-                            <input placeholder="Thema" name="nmd_image_prompt" id="nmd_image_prompt"></input>
                             <button class="button action" onclick="create_image()">Generieren</button>
                             <button class="button action" onclick="add_image()">Erzeugte Bilder hinzufügen</button>
 
@@ -438,6 +441,7 @@ function nmd_create_image_callback()
 
 
                     </div>
+                    <textarea placeholder="Thema" name="nmd_image_prompt" id="nmd_image_prompt"></textarea>
                     <div class="bilder">
                         <div class="imageFlexContainer">
 
@@ -466,20 +470,26 @@ function nmd_create_image_callback()
             <div class="editImage container">
                 <h2 class="wp-heading-inline">Bilder bearbeiten</h2>
                 <div class="editImageContainer">
-                    <div class="rowCenter">
-                        <div class="rowCenter spaced toolbar">
-                            <label class="spaced" for="pen-size"><svg xmlns="http://www.w3.org/2000/svg" height="1.5em" viewBox="0 0 576 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. -->
+                    <div>
+                        <div class=" toolbar">
+                            <label title="Legt die Stiftdicke fest" class="spaced" for="pen-size"><svg xmlns="http://www.w3.org/2000/svg" height="1.5em" viewBox="0 0 576 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. -->
                                     <path d="M339.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L568.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S517.7-4.4 499.1 9.6L262.4 187.2c-24 18-38.2 46.1-38.4 76.1L339.3 367.1zm-19.6 25.4l-116-104.4C143.9 290.3 96 339.6 96 400c0 3.9 .2 7.8 .6 11.6C98.4 429.1 86.4 448 68.8 448H64c-17.7 0-32 14.3-32 32s14.3 32 32 32H208c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z" />
                                 </svg></label>
                             <input class="spaced" type="range" id="pen-size" min="5" max="60" value="3">
-                            <label for="erase"><svg xmlns="http://www.w3.org/2000/svg" height="1.5em" viewBox="0 0 576 512" style="margin-right: 8px;"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. -->
-                                    <path d="M290.7 57.4L57.4 290.7c-25 25-25 65.5 0 90.5l80 80c12 12 28.3 18.7 45.3 18.7H288h9.4H512c17.7 0 32-14.3 32-32s-14.3-32-32-32H387.9L518.6 285.3c25-25 25-65.5 0-90.5L381.3 57.4c-25-25-65.5-25-90.5 0zM297.4 416H288l-105.4 0-80-80L227.3 211.3 364.7 348.7 297.4 416z" />
-                                </svg></label>
-                            <input type="checkbox" name="erase" id="erase">
+                            <br>
+                            <div>
+                                <label title="Radierer" for="erase"><svg xmlns="http://www.w3.org/2000/svg" height="1.5em" viewBox="0 0 576 512" style="margin-right: 8px;"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. -->
+                                        <path d="M290.7 57.4L57.4 290.7c-25 25-25 65.5 0 90.5l80 80c12 12 28.3 18.7 45.3 18.7H288h9.4H512c17.7 0 32-14.3 32-32s-14.3-32-32-32H387.9L518.6 285.3c25-25 25-65.5 0-90.5L381.3 57.4c-25-25-65.5-25-90.5 0zM297.4 416H288l-105.4 0-80-80L227.3 211.3 364.7 348.7 297.4 416z" />
+                                    </svg></label>
+                                <input type="checkbox" name="erase" id="erase">
+                            </div>
                         </div>
                     </div>
                     <div id="image-container">
-                        <input type="file" id="image-upload" accept="image/*">
+                        <div style="display: flex; flex-direction: column">
+                            <button id="upload_image_button" class="button">Bild aus Mediathek einfügen</button>
+                            <input type="file" id="image-upload" accept="image/*">
+                        </div>
                         <div style="position: relative;">
                             <canvas id="image-canvas"></canvas>
                             <canvas id="tempCanvas" style="position: absolute; top: 0;left: 0; "></canvas>
@@ -487,11 +497,13 @@ function nmd_create_image_callback()
                         <canvas id="image-canvas-hidden"></canvas>
                         <img id="editedImage" src="" alt="">
                     </div>
-                    <textarea name="editPrompt" id="editPrompt" cols="30" rows="1" placeholder="Prompt zu bearbeiten"></textarea>
+                    <textarea name="editPrompt" id="editPrompt" cols="30" rows="1" placeholder="Hier Prompt für die Bildbearbeitung eingeben"></textarea>
                     <button class="button action" id="submit-button">Inpaint absenden</button>
                     <button class="button action" id="submit-button" onclick="imageVariation()">Variante erstellen(ohne Prompt)</button>
                     <button class="button action" id="submit-button" onclick="reuseImage()">Erstelltes Bild in die bearbeitung senden</button>
                     <button class="button action" onclick="saveEditedImage()">Bild speichern</button>
+                    <input id="image_url" type="text" name="image_url" style="display: none;" />
+
                 </div>
             </div>
         </div>

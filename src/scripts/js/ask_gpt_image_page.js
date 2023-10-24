@@ -116,7 +116,7 @@ function add_image() {
 	loadingText.innerHTML = 'Bilder werden hinzugefügt...';
 	count = document.getElementById('count').value;
 	let checkboxes = document.getElementsByName('selectImage');
-	for (let index = 0; index <= count; index++) {
+	for (let index = 0; index < count; index++) {
 		if (checkboxes[index].checked == false) {
 			count--;
 		}
@@ -131,7 +131,7 @@ function add_image() {
 	var image_urls = ['', '', ''];
 	var title = document.getElementById('nmd_image_prompt').value;
 	let tempI = 0;
-	for (let index = 0; index <= count; index++) {
+	for (let index = 0; index < count; index++) {
 		if (checkboxes[index].checked == true) {
 			image_urls[tempI] = document.getElementById('nmd_image_' + (index + 1)).src;
 			tempI++;
@@ -504,7 +504,8 @@ function editImage(n) {
 function reuseImage() {
 	loadingText.innerHTML = 'Bild wird geladen...';
 	url = document.getElementById('editedImage').src;
-	if (url == '' || url == undefined || url == null) {
+	console.log(url);
+	if (url == '' || url == undefined || url == null || url.includes('image.php')) {
 		alert('Bitte erstellen Sie erst ein Bild');
 		return;
 	}
@@ -568,4 +569,84 @@ function setLoadingScreen() {
 function removeLoadingScreen() {
 	document.getElementById('overlay').style.display = 'none';
 	document.body.classList.remove('blurred');
+}
+
+jQuery(document).ready(function ($) {
+	var mediaUploader;
+
+	$('#upload_image_button').click(function (e) {
+		e.preventDefault();
+		console.log('test');
+		// If the uploader object has already been created, reopen the dialog
+		if (mediaUploader) {
+			mediaUploader.open();
+			return;
+		}
+
+		// Extend the wp.media object
+		mediaUploader = wp.media.frames.file_frame = wp.media({
+			title: 'Choose Image',
+			button: {
+				text: 'Choose Image',
+			},
+			multiple: false,
+		});
+
+		// When an image is selected, run a callback
+		mediaUploader.on('select', function () {
+			var attachment = mediaUploader.state().get('selection').first().toJSON();
+			$('#image_url').val(attachment.url);
+			loadMediaImage();
+		});
+
+		// Open the uploader dialog
+		mediaUploader.open();
+	});
+});
+
+function loadMediaImage() {
+	loadingText.innerHTML = 'Bild wird geladen...';
+	let url = document.getElementById('image_url').value;
+	if (url == '' || url == undefined || url == null) {
+		alert('Bitte erstellen Sie erst ein Bild');
+		return;
+	}
+	setLoadingScreen();
+	console.log(url);
+	jQuery(document).ready(function ($) {
+		$.ajax({
+			url: myAjax.ajaxurl,
+			type: 'POST',
+			data: {
+				action: 'fetch_image_as_blob',
+				url: url,
+			},
+			success: function (response) {
+				console.log(response);
+				let blob = dataURLtoBlob(response);
+				const reader = new FileReader();
+				reader.onload = function (e) {
+					const img = new Image();
+					img.src = e.target.result;
+					img.onload = function () {
+						imageCanvas.width = img.width;
+						imageCanvas.height = img.height;
+						imageCanvasHidden.width = img.width;
+						imageCanvasHidden.height = img.height;
+						tempCanvas.width = img.width;
+						tempCanvas.height = img.height;
+						orgImage = img;
+						ctx.drawImage(img, 0, 0, img.width, img.height);
+						orgFile = imageCanvas.toDataURL('image/png');
+						removeLoadingScreen();
+					};
+				};
+				reader.readAsDataURL(blob);
+			},
+			error: function (error) {
+				console.log(error);
+				removeLoadingScreen();
+			},
+		});
+	});
 }

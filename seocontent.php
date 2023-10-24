@@ -533,6 +533,15 @@ function misha_settings_link($links_array, $plugin_file_name)
 
 	return $links_array;
 }
+
+function enqueue_custom_scripts()
+{
+	wp_enqueue_media();
+}
+add_action('admin_enqueue_scripts', 'enqueue_custom_scripts');
+
+
+
 function run_SEOContent()
 {
 	$plugin = new SEOContent();

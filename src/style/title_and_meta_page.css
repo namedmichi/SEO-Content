@@ -319,6 +319,11 @@ a {
 	}
 }
 
+@media only screen and (max-width: 3500px) {
+	.promting {
+		left: 39%;
+	}
+}
 @media only screen and (max-width: 3000px) {
 	.promting {
 		left: 37%;
@@ -600,4 +605,8 @@ a {
 	border: 1px solid #dee2e6;
 	border-radius: 0.5rem;
 	align-items: self-end;
+}
+.newTitleShorted,
+.titleShorted {
+	color: #1a0dab;
 }

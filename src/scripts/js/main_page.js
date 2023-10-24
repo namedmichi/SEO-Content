@@ -64,7 +64,8 @@ function saveSettings() {
 	var whyUs = document.getElementById('whyUs').value;
 	var usps = document.getElementById('usps').value;
 	var cta = document.getElementById('cta').value;
-	var shortcode = document.getElementById('shortcode').value;
+	var shortcode = document.getElementById('shortcode').value.replace(/"/g, "'");
+	console.log(shortcode);
 	jQuery(document).ready(function ($) {
 		$.ajax({
 			url: myAjax.ajaxurl,

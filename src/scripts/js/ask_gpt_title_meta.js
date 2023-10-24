@@ -702,7 +702,7 @@ async function askGpt(prompt, tokens) {
 						try {
 							response = JSON.parse(response);
 							console.log(response);
-							let content = response['answer'];
+							let content = response['answer'].replace(/^"(.*)"$/, '$1');
 							resolve(content.trim()); // Resolve the promise with the response content
 						} catch (e) {
 							reject(e); // Reject the promise if there is an error (e.g., in parsing the response)
