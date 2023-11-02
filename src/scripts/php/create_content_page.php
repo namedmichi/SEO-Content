@@ -33,11 +33,18 @@ function gpt_create_post()
 {
     try {
         //code...
+        $thema = isset($_POST['thema']) ? wp_kses_post($_POST['thema']) : '';
         $title = isset($_POST['title']) ? wp_kses_post($_POST['title']) : '';
-        $inhalt  = isset($_POST['inhalt']) ? wp_kses_post($_POST['inhalt']) : '';
+        $inhalt  = isset($_POST['inhalt']) ? $_POST['inhalt'] : '';
         $excerpt  = isset($_POST['excerpt']) ? wp_kses_post($_POST['excerpt']) : '';
         $typ = isset($_POST['typ']) ? wp_kses_post($_POST['typ']) : '';
-
+        if ($typ == "page") {
+            echo "The variable \$typ is 'page'.";
+        } elseif ($typ == "post") {
+            echo "The variable \$typ is 'post'.";
+        } else {
+            echo "The variable \$typ is neither 'page' nor 'post'.";
+        }
         $wordpress_post = array(
             'post_title' => $title,
             'post_content' => $inhalt,
@@ -50,6 +57,15 @@ function gpt_create_post()
 
         $id = wp_insert_post($wordpress_post);
         save_page_meta_description($id, $excerpt);
+        if ($typ == "page") {
+            echo "The variable \$typ is 'page'.";
+            echo $thema;
+            $updated_post = array(
+                'ID'        => $id,
+                'post_name' => $thema,
+            );
+            wp_update_post($updated_post);
+        }
         echo $id;
     } catch (\Throwable $th) {
         echo $th;
@@ -461,8 +477,9 @@ function askGPT()
 
     // Set cURL options
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // Return response as a string
-    curl_setopt($ch, CURLOPT_POST, true);           // Set method to POST
+    curl_setopt($ch, CURLOPT_POST, true);           // Set method to POST1
     curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData); // Set POST data
+    curl_setopt($ch, CURLOPT_TIMEOUT, 600);  // Sets a timeout of 600 seconds
     curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json')); // Set content type to JSON
 
     // Execute cURL session and get the response
@@ -514,8 +531,8 @@ function getTokens()
 add_action('scriptTest', 'testScript');
 add_action('wp_ajax_ask_gpt', 'askGPT');
 add_action('wp_ajax_get_tokens', 'getTokens');
-add_action('wp_ajax_my_ajax_request', 'gpt_create_post');
-add_action('wp_ajax_nopriv_my_ajax_request', 'gpt_create_post');
+add_action('wp_ajax_gpt_create_post', 'gpt_create_post');
+add_action('wp_ajax_nopriv_gpt_create_post', 'gpt_create_post');
 add_action('wp_ajax_my_ajax_request2', 'gpt_add_script_to_post');
 add_action('wp_ajax_nopriv_my_ajax_request2', 'gpt_add_script_to_post');
 add_action('wp_ajax_delete_template', 'delete_template');
@@ -1383,6 +1400,10 @@ function nmd_create_content_callback()
                 <div class="rechts container">
 
                     <div class="prompting">
+                        <div class="alignMiddle">
+                            <label for="templatePrompt">Templates der SEO-Küche verwenden</label>
+                            <input style="margin-left:4px" type="checkbox" name="templatePrompt" id="templatePrompt">
+                        </div>
                         <h3>Titel</h3>
                         <textarea name="title_prompt" id="title_prompt" cols="30" rows="10"><?php echo $hardPrompts["titlePrompt"] ?></textarea>
                         <h3>Überschriften</h3>

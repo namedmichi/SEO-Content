@@ -87,10 +87,12 @@ request.onreadystatechange = function () {
 		document.getElementById('excerp_prompt').value = promptList['excerpPrompt'];
 		// Use the jsonData variable as needed
 		console.log(jsonData);
+		let systemprompt = promptList['systemRole'];
+
 		chat = [
 			{
 				role: 'system',
-				content: promptList['systemRole'],
+				content: systemprompt,
 			},
 		];
 	}
@@ -363,8 +365,30 @@ function getCustomVariables() {
 }
 
 async function askGpt(prompt, tokens) {
+	let temp = 0.6;
 	console.log('Prompt: ' + prompt);
+	console.trace();
+	function getStackLines() {
+		const err = new Error();
+		return err.stack.split('\n');
+	}
+
+	let lines = getStackLines();
+	let systemprompt = promptList['systemRole'];
+	console.log(lines);
+	if (lines.length > 3 && lines[3].includes('ask_gpt_content_page_ueberschriften') && document.getElementById('templatePrompt').checked) {
+		console.log('Condition met on second line of trace.');
+		temp = 0.3;
+		systemprompt = promptList['templatePrompt'];
+		chat = [
+			{
+				role: 'system',
+				content: systemprompt,
+			},
+		];
+	}
 	chat.push({ role: 'user', content: prompt });
+	console.log(chat);
 	try {
 		if (premium == false) {
 			const response = await axios.post(
@@ -372,7 +396,7 @@ async function askGpt(prompt, tokens) {
 				{
 					messages: chat,
 
-					temperature: 0.6,
+					temperature: temp,
 					model: 'gpt-4',
 					n: 1,
 				},
@@ -385,6 +409,7 @@ async function askGpt(prompt, tokens) {
 			);
 
 			if (response.status === 200) {
+				console.log(response.data);
 				const { choices } = response.data;
 				if (choices && choices.length > 0) {
 					console.log(choices);
@@ -404,7 +429,7 @@ async function askGpt(prompt, tokens) {
 					data: {
 						action: 'ask_gpt',
 						chat: chat,
-						temperature: 0.6,
+						temperature: temp,
 						model: 'gpt-4',
 					},
 					success: function (response) {
@@ -466,8 +491,8 @@ function ask_gpt_content_page_title() {
 	prompt = replaceCustomVars(prompt);
 
 	askGpt(prompt, 27 * abschnitte).then((result) => {
-		document.getElementById('nmd_abschnitte_input').innerHTML = result;
-		document.getElementById('nmd_abschnitte_input').value = result;
+		document.getElementById('nmd_abschnitte_input').innerHTML = result.replace(/^"(.*)"$/, '$1');
+		document.getElementById('nmd_abschnitte_input').value = result.replace(/^"(.*)"$/, '$1');
 		ask_gpt_content_page_ueberschriften();
 	});
 }
@@ -502,8 +527,8 @@ function ask_gpt_content_page_ueberschriften() {
 
 	tokens = tokens * abschnitte * inhaltCount;
 	askGpt(prompt, tokens).then((result) => {
-		document.getElementById('nmd_inhalt_input').innerHTML = result;
-		document.getElementById('nmd_inhalt_input').value = result;
+		document.getElementById('nmd_inhalt_input').innerHTML = result.replace(/^"(.*)"$/, '$1');
+		document.getElementById('nmd_inhalt_input').value = result.replace(/^"(.*)"$/, '$1');
 		ask_gpt_content_page_excerp();
 	});
 }
@@ -523,11 +548,11 @@ function ask_gpt_content_page_excerp() {
 			document.getElementById('nmd_excerp_input').innerHTML = result.replace(/^"(.*)"$/, '$1');
 			document.getElementById('nmd_excerp_input').value = result.replace(/^"(.*)"$/, '$1');
 			removeLoadingScreen();
-
+			let systemprompt = promptList['systemRole'];
 			chat = [
 				{
 					role: 'system',
-					content: promptList['systemRole'],
+					content: systemprompt,
 				},
 			];
 		})
@@ -647,6 +672,7 @@ function create_content_page() {
 	setLoadingScreen();
 	loadingText.innerHTML = 'Erstelle Seite...';
 	generateMarkup();
+	topic = document.getElementById('nmd_topic_input').value;
 	var title_output = document.getElementById('nmd_title_input').value;
 	var inhalt = document.getElementById('nmd_inhalt_input').value;
 	inhalt += '\n\n';
@@ -676,11 +702,13 @@ function create_content_page() {
 		}
 	}
 	jQuery(document).ready(function ($) {
+		console.log(topic);
 		$.ajax({
 			url: myAjax.ajaxurl,
 			type: 'POST',
 			data: {
-				action: 'my_ajax_request',
+				action: 'gpt_create_post',
+				thema: topic,
 				title: title_output,
 				inhalt: inhalt,
 				excerpt: excerpt,
