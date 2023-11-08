@@ -477,6 +477,8 @@ function editImage(n) {
 				const reader = new FileReader();
 				reader.onload = function (e) {
 					const img = new Image();
+					img.width = 512;
+					img.height = 512;
 					img.src = e.target.result;
 					img.onload = function () {
 						imageCanvas.width = img.width;

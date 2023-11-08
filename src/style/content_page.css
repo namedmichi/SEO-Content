@@ -15,7 +15,12 @@
 	pointer-events: auto;
 	/* Enable click events on the overlay */
 }
-
+#loadingText {
+	margin-bottom: 101px;
+	padding-left: 24px;
+	padding-right: 40px;
+	text-align: center;
+}
 #startseite {
 	font-size: 14px !important;
 	font-weight: 400 !important;
@@ -216,7 +221,10 @@ input {
 	margin-top: 8px;
 }
 .Inhalt input {
-	width: 10ch;
+	/* width: 10ch; */
+}
+.Inhalt input[type='radio'] {
+	margin-top: 4px;
 }
 .logo {
 	margin-right: 1.5rem;
@@ -440,10 +448,10 @@ input {
 	display: flex;
 	position: absolute;
 	background-color: white;
-	width: 296px;
-	height: 270px;
-	top: -85px;
-	left: -108px;
+	width: 379px;
+	height: 379px;
+	top: -141px;
+	left: -153px;
 	z-index: -1;
 	justify-content: center;
 	box-shadow: 0 1rem 3rem rgba(23, 27, 31, 0.15);

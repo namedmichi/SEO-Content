@@ -199,38 +199,27 @@ async function getInfos(type) {
 		shortenText();
 	}
 
-	let paragraphs = document.querySelectorAll('.titleDesktop');
-	paragraphs.forEach(function (para, index) {
-		para.addEventListener('input', function (event) {
-			console.log('Content edited in paragraph at index', index);
-			console.log('New content: ', event.target.textContent.trim());
-			titlesArray[index] = event.target.textContent.trim();
-		});
+	addEventListenerToParagraphs('.titleDesktop', function (event, index) {
+		titlesArray[index] = event.target.textContent.trim();
 	});
-	paragraphs = document.querySelectorAll('.metaDesktop');
-	paragraphs.forEach(function (para, index) {
-		para.addEventListener('input', function (event) {
-			console.log('Content edited in paragraph at index', index);
-			console.log('New content: ', event.target.textContent.trim());
-			exceptArray[index] = event.target.textContent.trim();
-		});
+	addEventListenerToParagraphs('.metaDesktop', function (event, index) {
+		exceptArray[index] = event.target.textContent.trim();
 	});
-	paragraphs = document.querySelectorAll('.titleMobile');
-	paragraphs.forEach(function (para, index) {
-		para.addEventListener('input', function (event) {
-			console.log('Content edited in paragraph at index', index);
-			console.log('New content: ', event.target.textContent.trim());
-			titlesArray[index] = event.target.textContent.trim();
-		});
+	addEventListenerToParagraphs('.titleMobile', function (event, index) {
+		titlesArray[index] = event.target.textContent.trim();
 	});
-	paragraphs = document.querySelectorAll('.metaMobile');
-	paragraphs.forEach(function (para, index) {
-		para.addEventListener('input', function (event) {
-			console.log('Content edited in paragraph at index', index);
-			console.log('New content: ', event.target.textContent.trim());
-			exceptArray[index] = event.target.textContent.trim();
-		});
+	addEventListenerToParagraphs('.metaMobile', function (event, index) {
+		exceptArray[index] = event.target.textContent.trim();
 	});
+
+	function addEventListenerToParagraphs(selector, callback) {
+		let paragraphs = document.querySelectorAll(selector);
+		paragraphs.forEach(function (para, index) {
+			para.addEventListener('input', function (event) {
+				callback(event, index);
+			});
+		});
+	}
 
 	var boxes = document.getElementsByName('selectBox');
 
@@ -330,6 +319,7 @@ async function generateNewSnippetsSubFunction(stil, trueI, i, element, element2)
 	prompt = prompt.replace('{meta}', meta);
 	prompt = prompt.replace('{stil}', stil);
 	if (document.getElementById('marketing').checked) {
+		prompt += '.Benutze folgende USP´s wenn angegeben: {usps}. Benutze folgende Call to Action Sätze: {ctas}.';
 		prompt = prompt.replace('{usps}', usps);
 		prompt = prompt.replace('{ctas}', ctas);
 	}
@@ -358,32 +348,24 @@ async function generateNewSnippetsSubFunction(stil, trueI, i, element, element2)
 		let paragraphs = document.querySelectorAll('.newTitleDesktop');
 		paragraphs.forEach(function (para, index) {
 			para.addEventListener('input', function (event) {
-				console.log('Content edited in paragraph at index', index);
-				console.log('New content: ', event.target.textContent.trim());
 				newTitlesArray[index] = event.target.textContent.trim();
 			});
 		});
 		paragraphs = document.querySelectorAll('.newMetaDesktop');
 		paragraphs.forEach(function (para, index) {
 			para.addEventListener('input', function (event) {
-				console.log('Content edited in paragraph at index', index);
-				console.log('New content: ', event.target.textContent.trim());
 				newExceptArray[index] = event.target.textContent.trim();
 			});
 		});
 		paragraphs = document.querySelectorAll('.newTitleMobile');
 		paragraphs.forEach(function (para, index) {
 			para.addEventListener('input', function (event) {
-				console.log('Content edited in paragraph at index', index);
-				console.log('New content: ', event.target.textContent.trim());
 				newTitlesArray[index] = event.target.textContent.trim();
 			});
 		});
 		paragraphs = document.querySelectorAll('.newMetaMobile');
 		paragraphs.forEach(function (para, index) {
 			para.addEventListener('input', function (event) {
-				console.log('Content edited in paragraph at index', index);
-				console.log('New content: ', event.target.textContent.trim());
 				newExceptArray[index] = event.target.textContent.trim();
 			});
 		});
@@ -652,7 +634,7 @@ async function askGpt(prompt, tokens) {
 		{
 			role: 'system',
 			content:
-				'You are a helpful assistant speaking German. You are a creativ Textwriter that helps with SEO and Text optimization. Complete my Promts:',
+				'You are a helpful assistant speaking German. You are a creativ Textwriter that helps with SEO and Text optimization.Do not explain yourself. Complete my Promts:',
 		},
 	];
 	chat.push({ role: 'user', content: prompt });
@@ -664,7 +646,7 @@ async function askGpt(prompt, tokens) {
 					messages: chat,
 					max_tokens: tokens,
 					temperature: 0.5,
-					model: 'gpt-4',
+					model: 'gpt-4-1106-preview',
 					n: 1,
 				},
 				{
@@ -696,7 +678,7 @@ async function askGpt(prompt, tokens) {
 						action: 'ask_gpt',
 						chat: chat,
 						temperature: 0.5,
-						model: 'gpt-4',
+						model: 'gpt-4-1106-preview',
 					},
 					success: function (response) {
 						try {

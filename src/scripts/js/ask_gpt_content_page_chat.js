@@ -139,8 +139,22 @@ request2.onreadystatechange = function () {
 };
 getCustomVariables();
 request2.send();
-
+let firstTemplateTry = true;
 function get_template(folder, subFolder, name) {
+	if (document.getElementById('templatePrompt').checked) {
+		if (firstTemplateTry) {
+			alert('Bei der Verwendung unseres Templates wird der Prompt für den Inhalt von uns vorgegeben.');
+			firstTemplateTry = false;
+		}
+		document.getElementById('template_name').value = name;
+		document.getElementById('template_description').value = templateList[folder][subFolder][name][0];
+		document.getElementById('title_prompt').value = templateList[folder][subFolder][name][1];
+		document.getElementById('abschnitte_prompt').value = templateList[folder][subFolder][name][2];
+		document.getElementById('excerp_prompt').value = templateList[folder][subFolder][name][4];
+		document.getElementById('nmd_stil_select').value = templateList[folder][subFolder][name][5];
+		document.getElementById('nmd_typ_select').value = templateList[folder][subFolder][name][7];
+		return;
+	}
 	console.log(name);
 	document.getElementById('template_name').value = name;
 	document.getElementById('template_description').value = templateList[folder][subFolder][name][0];
@@ -374,11 +388,13 @@ async function askGpt(prompt, tokens) {
 	}
 
 	let lines = getStackLines();
+	let reset = false;
 	let systemprompt = promptList['systemRole'];
 	console.log(lines);
 	if (lines.length > 3 && lines[3].includes('ask_gpt_content_page_ueberschriften') && document.getElementById('templatePrompt').checked) {
 		console.log('Condition met on second line of trace.');
 		temp = 0.3;
+		reset = true;
 		systemprompt = promptList['templatePrompt'];
 		chat = [
 			{
@@ -397,7 +413,7 @@ async function askGpt(prompt, tokens) {
 					messages: chat,
 
 					temperature: temp,
-					model: 'gpt-4',
+					model: 'gpt-4-1106-preview',
 					n: 1,
 				},
 				{
@@ -417,6 +433,15 @@ async function askGpt(prompt, tokens) {
 					const { content } = message;
 					console.log(content);
 					chat.push({ role: 'assistant', content: content });
+					if (reset) {
+						systemprompt = promptList['systemRole'];
+						chat = [
+							{
+								role: 'system',
+								content: systemprompt,
+							},
+						];
+					}
 					return content.trim();
 				}
 			}
@@ -430,17 +455,53 @@ async function askGpt(prompt, tokens) {
 						action: 'ask_gpt',
 						chat: chat,
 						temperature: temp,
-						model: 'gpt-4',
+						model: 'gpt-4-1106-preview',
 					},
-					success: function (response) {
-						try {
-							response = JSON.parse(response);
-							console.log(response);
-							let content = response['answer'];
-							resolve(content.trim()); // Resolve the promise with the response content
-						} catch (e) {
-							reject(e); // Reject the promise if there is an error (e.g., in parsing the response)
+					success: async function (response) {
+						let finished = false;
+						while (!finished) {
+							jQuery.ajax({
+								url: myAjax.ajaxurl,
+								method: 'POST',
+								data: {
+									action: 'check_task_status',
+								},
+								success: function (response) {
+									console.log(response);
+									if (!response.includes('Task still processing.')) {
+										console.log(response);
+										finished = true;
+										if (reset) {
+											systemprompt = promptList['systemRole'];
+											chat = [
+												{
+													role: 'system',
+													content: systemprompt,
+												},
+											];
+											resolve(response.trim().replace(/\\"/g, '"'));
+										}
+										resolve(response.trim());
+									} else {
+										console.log("Task still processing. Let's wait 1 seconds and try again.");
+										console.log(response);
+									}
+								},
+								error: function (error) {
+									console.log(error);
+								},
+							});
+							await new Promise((r) => setTimeout(r, 3000));
 						}
+						// try {
+
+						// 	response = JSON.parse(response);
+						// 	console.log(response);
+						// 	let content = response['answer'];
+						// 	resolve(content.trim()); // Resolve the promise with the response content
+						// } catch (e) {
+						// 	reject(e); // Reject the promise if there is an error (e.g., in parsing the response)
+						// }
 					},
 					error: function (error) {
 						reject(error); // Reject the promise if the AJAX request fails
@@ -502,6 +563,11 @@ function ask_gpt_content_page_ueberschriften() {
 	var words = document.getElementById('nmd_words_count').value;
 	var tokens = words * 3;
 	var prompt = document.getElementById('inhalt_prompt').value;
+	if (document.getElementById('templatePrompt').checked) {
+		prompt = promptList['inhaltTemplatePrompt'];
+		// \nSetze am ende einen Call-To-Action-Button.
+		prompt = prompt.replace('{topic}', topic);
+	}
 	prompt = prompt.replace('{title}', title);
 	prompt = prompt.replace('{stil}', stil);
 	prompt = prompt.replace('{ton}', ton);
@@ -682,9 +748,33 @@ function create_content_page() {
 	var typ = document.getElementById('nmd_typ_select').value;
 	var faqBool = false;
 
-	if (document.getElementById('includeShortcode').checked) {
+	var radios = document.getElementsByName('kontaktTyp');
+	let value = null;
+	// Wir durchlaufen die Radio Buttons, um zu überprüfen, welcher ausgewählt ist
+	for (var i = 0, length = radios.length; i < length; i++) {
+		if (radios[i].checked) {
+			// Wenn ein Radio Button ausgewählt ist, zeigen wir den Wert an
+			value = radios[i].value;
+			// Da wir den ausgewählten gefunden haben, brechen wir die Schleife ab
+			break;
+		}
+	}
+	if (value == null) {
+		value = 'not';
+	}
+	if (value == 'form') {
 		console.log('includeShortcode');
-		inhalt += '<!-- wp:shortcode --> \n ' + settingsArray['shortcode'] + '\n	<!-- /wp:shortcode -->';
+		inhalt +=
+			'<p id="kontakt"></p>\n<!-- wp:shortcode --> \n ' + settingsArray['shortcode'].replace(/\'/g, '"') + '\n	<!-- /wp:shortcode -->';
+	}
+
+	if (value == 'page') {
+		console.log('includePage');
+		url = settingsArray['kontaktSeite'];
+		inhalt +=
+			'<p id="kontakt"></p>\n<!-- wp:buttons -->\n<div class="wp-block-buttons"><!-- wp:button -->\n	<div class="wp-block-button"><a class="wp-block-button__link wp-element-button" target="_blank" rel="noopener noreferrer" href="' +
+			url +
+			'">Jetzt Kontakt aufnehmen</a></div>	\n	<!-- /wp:button --></div>\n<!-- /wp:buttons -->';
 	}
 
 	if (document.getElementById('question').value !== '') {
@@ -1090,14 +1180,56 @@ function get_keywords() {
 	});
 }
 
+let startText = true;
+
 function setLoadingScreen() {
 	document.getElementById('overlay').style.display = 'flex';
 	document.body.classList.add('blurred');
+	if (startText) {
+		startText = false;
+		startCycleText();
+	}
 }
 function removeLoadingScreen() {
 	document.getElementById('overlay').style.display = 'none';
 	document.body.classList.remove('blurred');
+	startText = true;
 }
+
+const sprueche = [
+	'Optimiere deine Kaffeepause – wir optimieren währenddessen deine Texte!',
+	"Unser SEO-Zauberstab wird gerade aufgeladen... gleich geht's los!",
+	"Auch Google mag's nicht eilig – Qualität braucht ihre Ladezeit.",
+	'Ladevorgang läuft... Stell dir vor, deine Konkurrenz macht das noch manuell!',
+	'Texte schreiben sich nicht von allein – aber fast, gib uns nur einen Moment Zeit.',
+	'Künstliche Intelligenz bei der Arbeit. Bitte nicht stören, Ladebalken kreist!',
+	'Die Konkurrenz kann einpacken – dein Ladebalken ist schneller als ihre Updates!',
+	'Deine Seite wird gerade für die Suchmaschinen attraktiver gemacht.',
+	'Während wir die Wartezeit nutzen, um die Qualität deiner Texte zu perfektionieren, kannst du dich auf die Ergebnisse freuen.',
+	'Nutze die Ladezeit, um durchzuatmen – wir sorgen dafür, dass deine Inhalte bald atemberaubend sind.',
+	'Denk daran, dass jede Minute, die wir hier laden, eine Minute ist, in der deine Website für Erfolg optimiert wird.',
+	'Diese Ladezeit ist eine kleine Pause für dich, aber ein großer Schritt für deine Website.',
+	'Nutze die Ladezeit, um dir klarzumachen, wie weit voraus du deiner Konkurrenz mit diesem automatisierten SEO-Boost sein wirst.',
+	'Diese kurze Wartezeit ist nur ein Bruchteil dessen, was du manuell für solch optimierten Content aufwenden müsstest.',
+	'Die Konkurrenz sitzt vielleicht noch an ihren Texten, während du mit unserer schnellen Optimierung schon fast fertig bist.',
+	'In der Zeit, die wir hier laden, hätten deine Konkurrenten kaum einen ansprechenden Titel manuell formuliert.',
+	'Denke während der Ladezeit daran, dass deine Konkurrenz noch von der Effizienz unserer KI-Texterstellung träumt.',
+	'Gib uns diese wenigen Momente, um die Arbeit von Stunden zu automatisieren, während andere noch im manuellen Modus feststecken.',
+	'Während wir hier eine kurze Ladezeit haben, seufzt deine Konkurrenz über die langwierige manuelle Texterstellung.',
+];
+
+async function startCycleText() {
+	let loadingTextElement = document.getElementById('loadingText');
+	loadingTextElement.innerHTML = 'Dieser Vorgang kann einige Minuten dauern. Bitte warten Sie einen Moment...';
+	await new Promise((r) => setTimeout(r, 5000));
+	while (!startText) {
+		randInt = Math.floor(Math.random() * sprueche.length);
+		loadingTextElement.innerHTML = sprueche[randInt];
+		randTImeout = Math.floor(Math.random() * 1000) + 8000;
+		await new Promise((r) => setTimeout(r, randTImeout));
+	}
+}
+
 function removeKeywordDiv(element) {
 	var parentDiv = element.parentElement;
 	parentDiv.remove();
@@ -1137,3 +1269,28 @@ function addKeywordDiv(keyword) {
 		'<br><label for="beschreibung">Beschreibung(Optional):</label><br><input type="text" name="beschreibung" id="beschreibung"><br>';
 	document.getElementById('keywordsAddContainer').appendChild(div);
 }
+
+document.getElementById('templatePrompt').addEventListener('click', function () {
+	if (document.getElementById('templatePrompt').checked) {
+		console.log('checked');
+		document.getElementById('nmd_abschnitte_select').disabled = 'true';
+		document.getElementById('nmd_abschnitte_select').title = 'Deaktiviert bei der Verwendung von Templates';
+		document.getElementById('nmd_inhalt_select').disabled = 'true';
+		document.getElementById('nmd_inhalt_select').title = 'Deaktiviert bei der Verwendung von Templates';
+		document.getElementById('nmd_words_count').disabled = 'true';
+		document.getElementById('nmd_words_count').title = 'Deaktiviert bei der Verwendung von Templates';
+		document.getElementById('inhalt_prompt').disabled = 'true';
+		document.getElementById('inhalt_prompt').title = 'Prompt wird automatisch generiert';
+		document.getElementById('nmd_abschnitte_select').value = 3;
+		headingCount(3);
+	} else {
+		document.getElementById('nmd_abschnitte_select').attributes.removeNamedItem('disabled');
+		document.getElementById('nmd_inhalt_select').attributes.removeNamedItem('disabled');
+		document.getElementById('nmd_words_count').attributes.removeNamedItem('disabled');
+		document.getElementById('inhalt_prompt').attributes.removeNamedItem('disabled');
+		document.getElementById('nmd_abschnitte_select').title = '';
+		document.getElementById('nmd_inhalt_select').title = '';
+		document.getElementById('nmd_words_count').title = '';
+		document.getElementById('inhalt_prompt').title = '';
+	}
+});

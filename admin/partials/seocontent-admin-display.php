@@ -191,6 +191,8 @@ do_action('scriptTest4');
                         <input type="text" name="usps" id="usps" placeholder="USP1, USP2, ...">
                         <label for="cta">Call to Actions</label>
                         <input type="text" name="cta" id="cta" placeholder="CTA1, CTA2, ...">
+                        <label for="kontaktSeite">Kontakt Seite:</label>
+                        <input type="text" name="kontaktSeite" id="kontaktSeite" placeholder="https://www.seo-kueche.de/kontakt/">
                         <label for="shortcode">Kontaktformular Shortcode</label>
                         <input type="text" name="shortcode" id="shortcode" placeholder="[shortcode]" style="margin-bottom: 16px;">
                         <div class="rightButton" style="padding-bottom: 20px;">

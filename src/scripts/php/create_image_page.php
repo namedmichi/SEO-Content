@@ -60,18 +60,20 @@ function gpt_create_image()
         // Logic when $premium is true, diverting to Flask App
         $url = 'http://94.130.105.89/api/create_image'; // Replace with your Flask app URL
         $data = array(
-            'prompt' => $prompt,
+            'prompt' =>  $prompt,
             "n" => 1,
-            "size" => "512x512"
+            "size" => "1024x1024",
         );
         $jsonData = json_encode($data);
     } else {
         // Original logic if $premium is false
         $url = 'https://api.openai.com/v1/images/generations';
         $data = array(
+            "model" => "dall-e-3",
+            "quality" => "hd",
             'prompt' => ' ' . $prompt . ' ',
             "n" => 1,
-            "size" => "512x512"
+            "size" => "1024x1024",
         );
         $jsonData = json_encode($data);
     }

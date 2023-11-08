@@ -62,6 +62,7 @@ function saveSettings() {
 	var adresse = document.getElementById('adresse').value;
 	var gewerbe = document.getElementById('Gewerbe').value;
 	var whyUs = document.getElementById('whyUs').value;
+	var kontaktSeite = document.getElementById('kontaktSeite').value;
 	var usps = document.getElementById('usps').value;
 	var cta = document.getElementById('cta').value;
 	var shortcode = document.getElementById('shortcode').value.replace(/"/g, "'");
@@ -79,6 +80,7 @@ function saveSettings() {
 				whyUs: whyUs,
 				usps: usps,
 				cta: cta,
+				kontaktSeite: kontaktSeite,
 				shortcode: shortcode,
 			},
 			success: function (response) {
@@ -106,14 +108,15 @@ function getSettings() {
 			.then((json) => {
 				console.log(json);
 				const prompts = json;
-				document.getElementById('apiKey').value = prompts.apiKey;
-				document.getElementById('firmenname').value = prompts.firmenname;
-				document.getElementById('adresse').value = prompts.adresse;
-				document.getElementById('Gewerbe').value = prompts.Gewerbe;
-				document.getElementById('whyUs').value = prompts.warumWir;
-				document.getElementById('usps').value = prompts.usps;
-				document.getElementById('cta').value = prompts.cta;
-				document.getElementById('shortcode').value = prompts.shortcode;
+				document.getElementById('apiKey').value = prompts.apiKey || '';
+				document.getElementById('firmenname').value = prompts.firmenname || '';
+				document.getElementById('adresse').value = prompts.adresse || '';
+				document.getElementById('Gewerbe').value = prompts.Gewerbe || '';
+				document.getElementById('whyUs').value = prompts.warumWir || '';
+				document.getElementById('usps').value = prompts.usps || '';
+				document.getElementById('kontaktSeite').value = prompts.kontaktSeite || '';
+				document.getElementById('cta').value = prompts.cta || '';
+				document.getElementById('shortcode').value = prompts.shortcode.replace(/\\'/g, '"') || '';
 			});
 
 		fetch(homeUrl + '/wp-content/plugins/SEOContent/src/scripts/php/variables.json')

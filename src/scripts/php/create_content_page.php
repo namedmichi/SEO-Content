@@ -454,7 +454,7 @@ function get_best_keyword_api()
     wp_die();
 }
 
-function askGPT()
+function askGPTOld()
 {
     $chat = isset($_POST['chat']) ? $_POST['chat'] : '';
     $model = isset($_POST['model']) ? $_POST['model'] : '';
@@ -499,6 +499,89 @@ function askGPT()
 
     wp_die();
 }
+
+function askGPT()
+{
+    // Your current setup and parameters
+    $chat = isset($_POST['chat']) ? $_POST['chat'] : '';
+    $model = isset($_POST['model']) ? $_POST['model'] : '';
+    $temperature = isset($_POST['temperature']) ? $_POST['temperature'] : '';
+    $url = 'http://94.130.105.89/api/chat'; // Assuming the URL might be different for starting the task
+
+    // Data preparation remains the same
+    $data = array(
+        'messages' => $chat,
+        'model' => $model,
+        'temperature' => $temperature
+    );
+    $jsonData = json_encode($data);
+
+    // The rest of the cURL setup remains the same
+    $ch = curl_init($url);
+    // Set cURL options
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // Return response as a string
+    curl_setopt($ch, CURLOPT_POST, true);           // Set method to POST1
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData); // Set POST data
+    curl_setopt($ch, CURLOPT_TIMEOUT, 600);  // Sets a timeout of 600 seconds
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json')); // Set content type to JSON
+
+    $response = curl_exec($ch);
+
+    // Error handling remains the same
+    if (curl_errno($ch)) {
+        wp_send_json_error('cURL error: ' . curl_error($ch));
+    }
+    curl_close($ch);
+
+    // Assuming the response contains an identifier for the task
+    $response_data = json_decode($response, true);
+    var_dump($response_data);
+    $task_id = $response_data['task_id'];
+
+    // Store this task ID in the WordPress database, associated with the current user
+    update_user_meta(get_current_user_id(), '_task_id', $task_id);
+
+    // Return a response to indicate the task has started
+    echo 'Task started.';
+    wp_die();
+}
+
+
+function check_task_status()
+{
+    // Retrieve the task ID stored earlier
+    $task_id = get_user_meta(get_current_user_id(), '_task_id', true);
+
+    $url = 'http://94.130.105.89/api/chat/get_result/' . $task_id; // Adjust the URL as needed
+
+
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // Return response as a string
+    curl_setopt($ch, CURLOPT_TIMEOUT, 600);  // Sets a timeout of 600 seconds
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json')); // Set content type to JSON
+
+
+    $response = curl_exec($ch);
+
+    if (curl_errno($ch)) {
+        wp_send_json_error('cURL error: ' . curl_error($ch));
+    }
+    curl_close($ch);
+
+    $response_data = json_decode($response, true);
+    // Check if task is complete (this is based on whatever logic or data the external server provides)
+    if ($response_data['status'] == 'completed') {
+        // Do something if needed, then send a positive response
+        echo $response_data['answer'];
+    } else {
+        var_dump($response_data);
+        // If the task is not yet complete, indicate so
+        echo 'Task still processing.';
+    }
+    wp_die();
+}
+add_action('wp_ajax_check_task_status', 'check_task_status');
+
 function getTokens()
 {
 
@@ -591,10 +674,11 @@ function save_main_settings()
     $adresse = isset($_POST['adresse']) ? $_POST['adresse'] : '';
     $Gewerbe = isset($_POST['Gewerbe']) ? $_POST['Gewerbe'] : '';
     $whyUs = isset($_POST['whyUs']) ? $_POST['whyUs'] : '';
+    $kontaktSeite = isset($_POST['kontaktSeite']) ? $_POST['kontaktSeite'] : '';
     $usps = isset($_POST['usps']) ? $_POST['usps'] : '';
     $cta = isset($_POST['cta']) ? $_POST['cta'] : '';
     $shortcode = isset($_POST['shortcode']) ? $_POST['shortcode'] : '';
-    $settingsArray = array('apiKey' => $apiKey, 'firmenname' => $firmenname, 'adresse' => $adresse, 'Gewerbe' => $Gewerbe, 'warumWir' => $whyUs, 'usps' => $usps, 'cta' => $cta, 'shortcode' => $shortcode);
+    $settingsArray = array('apiKey' => $apiKey, 'firmenname' => $firmenname, 'adresse' => $adresse, 'Gewerbe' => $Gewerbe, 'warumWir' => $whyUs, 'usps' => $usps, 'kontaktSeite' => $kontaktSeite, 'cta' => $cta, 'shortcode' => $shortcode);
     $jsonData = json_encode($settingsArray, JSON_PRETTY_PRINT);
     file_put_contents($path, $jsonData);
     wp_die();
@@ -937,7 +1021,7 @@ function nmd_create_content_callback()
         $jsonString = file_get_contents($promptPath);
         $hardPrompts = json_decode($jsonString, true);
         $jsonString = file_get_contents($testPath);
-        $testTemplates = get_option('seocontent_templates');
+        $testTemplates = json_decode($jsonString, true);
     } catch (Exception $e) {
     }
 
@@ -967,7 +1051,7 @@ function nmd_create_content_callback()
             <div></div>
             <p style="position: absolute;top: 16px;left: 16px;">Loading</p>
             <span class="overlayBackground">
-                <p id="loadingText" style="margin-bottom: 82px;">some Text</p>
+                <p id="loadingText">some Text</p>
             </span>
         </div>
 
@@ -1056,7 +1140,7 @@ function nmd_create_content_callback()
                             </span>
                         </div>
                         <div id="keywordContainer" style="display: none;">
-                            <button id="keywordRechercheButton" style="margin-left: 8px;" class="button action" onclick="get_keywords()">Keyword Recherche mit KI durchführen</button>
+                            <!-- <button id="keywordRechercheButton" style="margin-left: 8px;" class="button action" onclick="get_keywords()">Keyword Recherche mit KI durchführen</button> -->
                             <div id="keywordsAddContainer">
                                 <div class="keywordDiv">
                                     <svg class="removeKeywordDiv" onclick="removeKeywordDiv(this)" xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 384 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. -->
@@ -1360,12 +1444,21 @@ function nmd_create_content_callback()
                                     &nbsp;
                                     <input type="checkbox" name="includeInfos" id="includeInfos" style="width: 16px">
                                 </div>
-
-                                <div class="checkboxDiv">
+                                <div>
+                                    <label style="font-size: 1rem;">Wähle eine Option:</label><br>
+                                    <input type="radio" id="option1" name="kontaktTyp" value="page">
+                                    <label for="option1">Kontakseite einbinden</label><br>
+                                    <input type="radio" id="option2" name="kontaktTyp" value="form">
+                                    <label for="option2">Kontaktforumar einbinden</label><br>
+                                    <input type="radio" id="option3" name="kontaktTyp" value="not">
+                                    <label for="option3">Keins</label><br>
+                                </div>
+                                <!-- <div class="checkboxDiv">
                                     <label for="includeShortcode" style="font-size: 1rem;">Kontaktformular einfügen</label>
                                     &nbsp;
                                     <input type="checkbox" name="includeShortcode" id="includeShortcode" style="width: 16px">
-                                </div>
+                                </div> -->
+
 
                             </div>
                             <br>
