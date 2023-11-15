@@ -1,6 +1,7 @@
 let dropArea;
 let dropAreaTemplates;
 let dropAreaVariables;
+let dropAreaMeta;
 let warns = document.getElementsByClassName('notice-warning');
 
 for (let i = 0; i < warns.length; i++) {
@@ -141,9 +142,14 @@ function getSettings() {
 		// Handle the dropped file
 		dropAreaVariables.addEventListener('drop', handleDropVariables, false);
 
+		dropAreaMeta = document.getElementById('drop-area-meta');
+		// Handle the dropped file
+		dropAreaMeta.addEventListener('drop', handleDropMeta, false);
+
 		dropArea.addEventListener('change', handleFileSelect, false);
 		dropAreaTemplates.addEventListener('change', handleFileSelectTemplates, false);
 		dropAreaVariables.addEventListener('change', handleFileSelectVariables, false);
+		dropAreaMeta.addEventListener('change', handleFileSelectMeta, false);
 	});
 }
 
@@ -468,6 +474,20 @@ function handleDropVariables(e) {
 		document.getElementById('variablesFileText').textContent = files[0].name;
 	}
 }
+function handleDropMeta(e) {
+	const dt = e.dataTransfer;
+	const files = dt.files;
+
+	// Handle the dropped files here
+	if (files.length > 0) {
+		// You can trigger your JavaScript event or function here
+		// For example, you can access the first dropped file with files[0]
+		// files[0] will contain the File object, and you can perform further actions with it.
+		// For instance, you can read the file contents or validate the file type.
+		console.log('File dropped:', files[0].name);
+		document.getElementById('metaTemplateFileText').textContent = files[0].name;
+	}
+}
 function handleFileSelect(event) {
 	const selectedFile = event.target.files[0];
 
@@ -494,5 +514,14 @@ function handleFileSelectVariables(event) {
 		// You can now access the selected file and perform actions with it
 		console.log('Selected file:', selectedFile.name);
 		document.getElementById('variablesFileText').textContent = selectedFile.name;
+	}
+}
+function handleFileSelectMeta(event) {
+	const selectedFile = event.target.files[0];
+
+	if (selectedFile) {
+		// You can now access the selected file and perform actions with it
+		console.log('Selected file:', selectedFile.name);
+		document.getElementById('metaTemplateFileText').textContent = selectedFile.name;
 	}
 }

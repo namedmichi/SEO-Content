@@ -329,6 +329,19 @@ function createSubFolder() {
 }
 function editFolder(folder) {
 	let newName = prompt('Bitte den neuen Namen eingeben', folder);
+	if (newName == null || newName == '') {
+		return;
+	}
+	if (newName in templateList) {
+		alert('Ordner dürfen nicht die gleichen Namen haben.');
+		return;
+	}
+	for (let i in templateList) {
+		if (newName == i) {
+			alert('Ordner dürfen nicht die gleichen Namen haben.');
+			return;
+		}
+	}
 
 	if (newName == null || newName == '') {
 		return;
@@ -393,15 +406,41 @@ async function askGpt(prompt, tokens) {
 	console.log(lines);
 	if (lines.length > 3 && lines[3].includes('ask_gpt_content_page_ueberschriften') && document.getElementById('templatePrompt').checked) {
 		console.log('Condition met on second line of trace.');
+		var radios = document.getElementsByName('kontaktTyp');
+		let value = null;
+		// Wir durchlaufen die Radio Buttons, um zu überprüfen, welcher ausgewählt ist
+		for (var i = 0, length = radios.length; i < length; i++) {
+			if (radios[i].checked) {
+				// Wenn ein Radio Button ausgewählt ist, zeigen wir den Wert an
+				value = radios[i].value;
+				// Da wir den ausgewählten gefunden haben, brechen wir die Schleife ab
+				break;
+			}
+		}
+		if (value == null) {
+			value = 'not';
+		}
+		if (value == 'page') {
+			url = settingsArray['kontaktSeite'];
+			let tempSystemPrompt = promptList['templatePromptKontaktSeite'];
+			tempSystemPrompt = tempSystemPrompt.replace('{kontaktSeiteUrl}', url);
+			chat = [
+				{
+					role: 'system',
+					content: tempSystemPrompt,
+				},
+			];
+		} else {
+			systemprompt = promptList['templatePrompt'];
+			chat = [
+				{
+					role: 'system',
+					content: systemprompt,
+				},
+			];
+		}
 		temp = 0.3;
 		reset = true;
-		systemprompt = promptList['templatePrompt'];
-		chat = [
-			{
-				role: 'system',
-				content: systemprompt,
-			},
-		];
 	}
 	chat.push({ role: 'user', content: prompt });
 	console.log(chat);
@@ -459,12 +498,15 @@ async function askGpt(prompt, tokens) {
 					},
 					success: async function (response) {
 						let finished = false;
+						let task_id = response.split('"')[3];
+						task_id = task_id.split('"')[0];
 						while (!finished) {
 							jQuery.ajax({
 								url: myAjax.ajaxurl,
 								method: 'POST',
 								data: {
 									action: 'check_task_status',
+									task_id: task_id,
 								},
 								success: function (response) {
 									console.log(response);
@@ -512,7 +554,7 @@ async function askGpt(prompt, tokens) {
 	} catch (error) {
 		console.error('Error:', error.message);
 		alert(
-			'Es ist ein Fehler aufgetreten. Bitte warten Sie ein paar Sekunden und versuchen es dan erneut. Bei weiteren Probleme kontaktieren Sie bitte den Support'
+			'Es ist ein Fehler aufgetreten. Bitte warten Sie ein paar Sekunden und versuchen es dann erneut. Bei weiteren Probleme kontaktieren Sie bitte den Support'
 		);
 		removeLoadingScreen();
 		throw error;
@@ -521,7 +563,6 @@ async function askGpt(prompt, tokens) {
 
 function ask_gpt_content_page() {
 	setValues();
-	loadingText.innerHTML = 'Generiere Titel...';
 	var result;
 
 	var prompt = document.getElementById('title_prompt').value;
@@ -540,7 +581,6 @@ function ask_gpt_content_page() {
 }
 function ask_gpt_content_page_title() {
 	setValues();
-	loadingText.innerHTML = 'Generiere Überschriften...';
 	var prompt = document.getElementById('abschnitte_prompt').value;
 	prompt = prompt.replace('{title}', title);
 	prompt = prompt.replace('{stil}', stil);
@@ -559,7 +599,7 @@ function ask_gpt_content_page_title() {
 }
 function ask_gpt_content_page_ueberschriften() {
 	setValues();
-	loadingText.innerHTML = 'Generiere Inhalt...';
+
 	var words = document.getElementById('nmd_words_count').value;
 	var tokens = words * 3;
 	var prompt = document.getElementById('inhalt_prompt').value;
@@ -601,7 +641,6 @@ function ask_gpt_content_page_ueberschriften() {
 
 function ask_gpt_content_page_excerp() {
 	setValues();
-	loadingText.innerHTML = 'Generiere Meta-Daten...';
 	var prompt = document.getElementById('excerp_prompt').value;
 	prompt = prompt.replace('{title}', title);
 	prompt = prompt.replace('{stil}', stil);
@@ -765,14 +804,16 @@ function create_content_page() {
 	if (value == 'form') {
 		console.log('includeShortcode');
 		inhalt +=
-			'<p id="kontakt"></p>\n<!-- wp:shortcode --> \n ' + settingsArray['shortcode'].replace(/\'/g, '"') + '\n	<!-- /wp:shortcode -->';
+			'<p id="kontakt"></p>\n<!-- wp:shortcode --> \n ' +
+			settingsArray['shortcode'].replace(/\\'/g, '"') +
+			'\n	<!-- /wp:shortcode -->';
 	}
 
 	if (value == 'page') {
 		console.log('includePage');
 		url = settingsArray['kontaktSeite'];
 		inhalt +=
-			'<p id="kontakt"></p>\n<!-- wp:buttons -->\n<div class="wp-block-buttons"><!-- wp:button -->\n	<div class="wp-block-button"><a class="wp-block-button__link wp-element-button" target="_blank" rel="noopener noreferrer" href="' +
+			'\n<!-- wp:buttons -->\n<div class="wp-block-buttons"><!-- wp:button -->\n	<div class="wp-block-button"><a class="wp-block-button__link wp-element-button" target="_blank" rel="noopener noreferrer" href="' +
 			url +
 			'">Jetzt Kontakt aufnehmen</a></div>	\n	<!-- /wp:button --></div>\n<!-- /wp:buttons -->';
 	}
@@ -791,6 +832,13 @@ function create_content_page() {
 			}
 		}
 	}
+	keywords = document.getElementsByName('keyword');
+	try {
+		focusKeyword = keywords[0].value;
+	} catch (error) {}
+	if (focusKeyword == undefined || focusKeyword == null) {
+		focusKeyword = '';
+	}
 	jQuery(document).ready(function ($) {
 		console.log(topic);
 		$.ajax({
@@ -801,6 +849,7 @@ function create_content_page() {
 				thema: topic,
 				title: title_output,
 				inhalt: inhalt,
+				keyword: focusKeyword,
 				excerpt: excerpt,
 				typ: typ,
 			},
@@ -1293,4 +1342,88 @@ document.getElementById('templatePrompt').addEventListener('click', function () 
 		document.getElementById('nmd_words_count').title = '';
 		document.getElementById('inhalt_prompt').title = '';
 	}
+});
+
+// Function to create the folder structure
+function createFolderStructure() {
+	let data = templateList;
+
+	const container = document.getElementById('templateContainer');
+	let htmlContent = '';
+	let folderCount = 0;
+	let subFolderCount = 0;
+
+	let arrowUp =
+		'<svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 448 512"><path d="M201.4 137.4c12.5-12.5 32.8-12.5 45.3 0l160 160c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L224 205.3 86.6 342.6c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3l160-160z" /></svg>';
+	let arrowDown =
+		'<svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 448 512"><path d="M201.4 342.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 274.7 86.6 137.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z" /></svg>';
+	let editPen =
+		'<svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z"/></svg>';
+	let deletIcon =
+		'<svg xmlns="http://www.w3.org/2000/svg" height="1.3em" viewBox="0 0 448 512"><path d="M170.5 51.6L151.5 80h145l-19-28.4c-1.5-2.2-4-3.6-6.7-3.6H177.1c-2.7 0-5.2 1.3-6.7 3.6zm147-26.6L354.2 80H368h48 8c13.3 0 24 10.7 24 24s-10.7 24-24 24h-8V432c0 44.2-35.8 80-80 80H112c-44.2 0-80-35.8-80-80V128H24c-13.3 0-24-10.7-24-24S10.7 80 24 80h8H80 93.8l36.7-55.1C140.9 9.4 158.4 0 177.1 0h93.7c18.7 0 36.2 9.4 46.6 24.9zM80 128V432c0 17.7 14.3 32 32 32H336c17.7 0 32-14.3 32-32V128H80zm80 64V400c0 8.8-7.2 16-16 16s-16-7.2-16-16V192c0-8.8 7.2-16 16-16s16 7.2 16 16zm80 0V400c0 8.8-7.2 16-16 16s-16-7.2-16-16V192c0-8.8 7.2-16 16-16s16 7.2 16 16zm80 0V400c0 8.8-7.2 16-16 16s-16-7.2-16-16V192c0-8.8 7.2-16 16-16s16 7.2 16 16z"/></svg>';
+
+	Object.keys(data).forEach((folder) => {
+		htmlContent += `<div class="folderTab">`;
+		htmlContent += `<div class="folderHeaderFlex" onclick="showFolder(${folderCount})">`;
+		htmlContent += `<h2 style='margin-top: 0px'>${folder}</h2>`;
+		htmlContent += `<span class="editPen" onclick="editFolder('${folder}')">` + editPen + `</span>`;
+		htmlContent += `<span onclick="delete_template_Folder('${folder}')">` + deletIcon + `</span>`;
+		htmlContent += `<span id="folderArrowUp${folderCount}" style="margin-right: 1rem;">` + arrowUp + `</span>`;
+		htmlContent += `<span id="folderArrowDown${folderCount}" style="margin-right: 1rem; display: none;">` + arrowDown + `</span>`;
+		htmlContent += `</div>`;
+		htmlContent += `<div id='folderContainer${folderCount}' class='folderContainer'>`;
+
+		Object.keys(data[folder]).forEach((subFolder) => {
+			htmlContent += `<div class='folderTab'>`;
+			htmlContent += `<div class='folderHeaderFlex' onclick='showSubFolder(${subFolderCount})'>`;
+			htmlContent += `<h3 class='subFolderHeader'>${subFolder}</h3>`;
+			htmlContent += `<span class="editPen" onclick="editFolder('${subFolder}')">` + editPen + `</span>`;
+			htmlContent += `<span onclick="delete_template_subFolder('${folder},${subFolder}')">` + deletIcon + `</span>`;
+			htmlContent += `<span id="subFolderArrowUp${subFolderCount}" style="margin-right: 1rem;">` + arrowUp + `</span>`;
+			htmlContent +=
+				`<span id="subFolderArrowDown${subFolderCount}" style="margin-right: 1rem; display: none;">` + arrowDown + `</span>`;
+			htmlContent += `</div>`;
+			htmlContent += `<div id='subFolderContainer${subFolderCount}' class='subFolderContainer'>`;
+
+			Object.keys(data[folder][subFolder]).forEach((template) => {
+				htmlContent += `<div class="template_card" onclick="get_template('${folder}', '${subFolder}', '${template}')">`;
+				htmlContent += `<div class="template_left">`;
+				htmlContent += `<span title="${data[folder][subFolder][template][0]}" style="margin-right:0">${template}</span>`;
+				htmlContent += `<span class="editPen" onclick="editFolder('${template}')">` + editPen + `</span>`;
+				htmlContent += `</div>`;
+				htmlContent += `<span onclick="delete_template('${folder}', '${subFolder}', '${template}')">` + deletIcon + `</span>`;
+				htmlContent += `</div>`;
+			});
+
+			htmlContent += `</div>`; // Close subFolderContainer
+			htmlContent += `</div>`; // Close subFolderTab
+			subFolderCount++;
+		});
+
+		htmlContent += `</div>`; // Close folderContainer
+		htmlContent += `</div>`; // Close folderTab
+		folderCount++;
+	});
+
+	container.innerHTML = htmlContent + container.innerHTML;
+}
+
+function setFolderOptions() {
+	let folderOptions = document.getElementById('unterordner_select');
+	let data = templateList;
+	let htmlContent = '';
+
+	for (const folder in data) {
+		for (const subFolder in data[folder]) {
+			htmlContent += `<option value="${folder},${subFolder}">${folder}: ${subFolder}</option>`;
+		}
+	}
+
+	folderOptions.innerHTML = htmlContent;
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+	await new Promise((r) => setTimeout(r, 1000));
+	createFolderStructure();
+	setFolderOptions();
 });

@@ -1,7 +1,14 @@
 const API_ENDPOINT = 'https://api.openai.com/v1/chat/completions';
 
 var promptList;
-let loadingText = document.getElementById('loadingText');
+let loadingText;
+
+let div = document.createElement('div');
+div.id = 'overlaySettings';
+div.style.display = 'none';
+div.innerHTML = '';
+
+document.getElementById('wpwrap').appendChild(div);
 
 function getHomeUrl() {
 	var href = window.location.href;
@@ -108,7 +115,6 @@ request3.send();
 
 async function getAllPages(type) {
 	setLoadingScreen();
-	loadingText.innerHTML = 'Lade Seiten...';
 	const baseURL = homeUrl + '/wp-json/wp/v2';
 	const perPage = 100; // Number of pages to retrieve per request
 	let totalPages = 1;
@@ -127,7 +133,7 @@ async function getAllPages(type) {
 		totalPages = parseInt(headers.get('x-wp-totalpages'));
 	}
 	// Fetch pages from each page until all are retrieved
-	for (let page = 1; page <= totalPages; page++) {
+	for (let page = 1; page <= Math.ceil(totalPages / 100); page++) {
 		const pagesResponse = await fetch(`${baseURL}/${type}?status=any&per_page=${perPage}&page=${page}`, {
 			method: 'GET',
 			headers: {
@@ -148,6 +154,7 @@ var idArray = [];
 var newTitlesArray = [];
 var newExceptArray = [];
 var urlArray = [];
+let inhaltArray = [];
 
 var printetTitles = 0;
 async function getInfos(type) {
@@ -166,7 +173,6 @@ async function getInfos(type) {
 		console.log(page);
 		try {
 			//sanitize the title  from html tags
-			loadingText.innerHTML = 'Lade Text...';
 			var title = page.title.rendered.replace(/(<([^>]+)>)/gi, '');
 			if (title == '' || title == undefined) {
 				title = 'Kein Titel vorhanden';
@@ -185,6 +191,15 @@ async function getInfos(type) {
 			} else {
 				meta = meta.replace(/(<([^>]+)>)/gi, '');
 			}
+			try {
+				let inhalt = page.content.rendered;
+				if (inhalt == undefined || inhalt == '') {
+					throw 'Kein Inhalt vorhanden';
+				}
+				inhaltArray.push(inhalt);
+			} catch (error) {
+				inhaltArray.push('');
+			}
 			exceptArray.push(meta);
 			idArray.push(page.id);
 			urlArray.push(page.link);
@@ -192,8 +207,36 @@ async function getInfos(type) {
 			console.log(error);
 		}
 	}
+	console.log(inhaltArray);
+	keywordArray = [];
+	console.log(idArray);
+	for (let i = 0; i < idArray.length; i++) {
+		jQuery(document).ready(function ($) {
+			$.ajax({
+				url: myAjax.ajaxurl,
+				method: 'POST',
+				data: {
+					action: 'get_page_keyword',
+					pageId: idArray[i],
+				},
+				success: function (response) {
+					responseObject = JSON.parse(response);
+					let keyword = '';
+					try {
+						keyword = responseObject['keyword'];
+					} catch (error) {}
+					if (keyword == undefined || keyword == null) {
+						keyword = '';
+					}
+					keywordArray.push(keyword);
+				},
+				error: function (error) {
+					console.log(error);
+				},
+			});
+		});
+	}
 	for (var i = 0 + printetTitles; i < titlesArray.length; i++) {
-		loadingText.innerHTML = 'Lade Snippet...';
 		addBlock(titlesArray[i], exceptArray[i], idArray[i]);
 		printetTitles++;
 		shortenText();
@@ -243,7 +286,6 @@ async function generateNewSnippets() {
 	}
 
 	setLoadingScreen();
-	loadingText.innerHTML = 'Generiere Snippets...';
 	var stil = document.getElementById('nmd_style').value;
 	var metas = document.getElementsByClassName('metaShorted');
 	let boxes = document.getElementsByName('selectBox');
@@ -302,10 +344,12 @@ var asyncCoounter = 0;
 async function generateNewSnippetsSubFunction(stil, trueI, i, element, element2) {
 	let title = titlesArray[i];
 	let meta = exceptArray[i];
+	let keyword = keywordArray[i];
 	// Build the prompt for the title.
 	let prompt = document.getElementById('promtTitel').value;
 	prompt = prompt.replace('{title}', title);
 	prompt = prompt.replace('{stil}', stil);
+	prompt = prompt.replace('{keyword}', keyword);
 
 	// Get the new title from GPT.
 	let newTitle = await askGpt(prompt, 60);
@@ -318,6 +362,8 @@ async function generateNewSnippetsSubFunction(stil, trueI, i, element, element2)
 	prompt = prompt.replace('{title}', title);
 	prompt = prompt.replace('{meta}', meta);
 	prompt = prompt.replace('{stil}', stil);
+	prompt = prompt.replace('{keyword}', keyword);
+	prompt = prompt.replace('{inhalt}', inhaltArray[i]);
 	if (document.getElementById('marketing').checked) {
 		prompt += '.Benutze folgende USP´s wenn angegeben: {usps}. Benutze folgende Call to Action Sätze: {ctas}.';
 		prompt = prompt.replace('{usps}', usps);
@@ -325,10 +371,8 @@ async function generateNewSnippetsSubFunction(stil, trueI, i, element, element2)
 	}
 
 	prompt = prompt.replace('{sonderzeichen}', sonderzeichen);
-	loadingText.innerHTML = 'Frage KI...';
 	// Get the new meta description from GPT.
 	let newMeta = await askGpt(prompt, 160);
-	loadingText.innerHTML = 'Füge Snippet hinzu...';
 	// Add the new snippet to the page.
 	await addNewBlock(newTitle, newMeta, idArray[i], i);
 	asyncCoounter++;
@@ -487,20 +531,24 @@ async function addNewBlock(newTitle, newMeta, id, i) {
 
 var newTitlesAll = '';
 var newMetasAll = '';
-async function retry(index, id, index) {
+async function retry(index, id) {
 	let stil = document.getElementById('nmd_style').value;
 	let newTitles = document.getElementsByClassName('newTitleDesktop');
 	let newMetas = document.getElementsByClassName('newMetaDesktop');
+	let keyword = keywordArray[index];
 	console.log('Size of newMetasAll: ', newMetasAll.length);
 	console.log('Accessing index: ', (index + 1) * 2 - 2);
-	newMetasAll[(index + 1) * 2 - 2].style.animation = '1.3s linear 0s infinite normal none running nmd-fading';
-	newMetasAll[(index + 1) * 2 - 1].style.animation = '1.3s linear 0s infinite normal none running nmd-fading';
+	let index1 = (parseInt(index) + 1) * 2 - 2;
+	let index2 = (parseInt(index) + 1) * 2 - 1;
+	newMetasAll[index1].style.animation = '1.3s linear 0s infinite normal none running nmd-fading';
+	newMetasAll[index2].style.animation = '1.3s linear 0s infinite normal none running nmd-fading';
 
 	let title = newTitles[index].innerHTML;
 	let meta = newMetas[index].innerHTML;
 	let prompt = promptList['newTitlePrompt'];
 	prompt = prompt.replace('{title}', title);
 	prompt = prompt.replace('{stil}', stil);
+	prompt = prompt.replace('{keyword}', keyword);
 
 	let newTitle = await askGpt(prompt, 60);
 
@@ -510,6 +558,8 @@ async function retry(index, id, index) {
 	prompt = promptList['newMetaPrompt'];
 	prompt = prompt.replace('{title}', title);
 	prompt = prompt.replace('{meta}', meta);
+	prompt = prompt.replace('{keyword}', keyword);
+	prompt = prompt.replace('{inhalt}', inhaltArray[index]);
 	if (document.getElementById('marketing').checked) {
 		prompt = prompt.replace('{usps}', usps);
 		prompt = prompt.replace('{ctas}', ctas);
@@ -521,13 +571,13 @@ async function retry(index, id, index) {
 
 	newTitlesArray[index] = newTitle;
 	newExceptArray[index] = newMeta;
-	newTitlesAll[(index + 1) * 2 - 1].innerHTML = newTitle;
-	newMetasAll[(index + 1) * 2 - 1].innerHTML = newMeta;
-	newTitlesAll[(index + 1) * 2 - 2].innerHTML = newTitle;
-	newMetasAll[(index + 1) * 2 - 2].innerHTML = newMeta;
+	newTitlesAll[(parseInt(index) + 1) * 2 - 1].innerHTML = newTitle;
+	newMetasAll[(parseInt(index) + 1) * 2 - 1].innerHTML = newMeta;
+	newTitlesAll[(parseInt(index) + 1) * 2 - 2].innerHTML = newTitle;
+	newMetasAll[(parseInt(index) + 1) * 2 - 2].innerHTML = newMeta;
 
-	newMetasAll[(index + 1) * 2 - 1].style.animation = 'none';
-	newMetasAll[(index + 1) * 2 - 2].style.animation = 'none';
+	newMetasAll[(parseInt(index) + 1) * 2 - 1].style.animation = 'none';
+	newMetasAll[(parseInt(index) + 1) * 2 - 2].style.animation = 'none';
 
 	shortenText();
 }
@@ -568,8 +618,6 @@ function submitChanges(blockCount, id, element) {
 
 	let subButtons = document.getElementsByClassName('submitChanges');
 	let buttonIndex = Array.from(subButtons).indexOf(element);
-
-	loadingText.innerHTML = 'Speichere Änderungen...';
 
 	updatePage(id, newTitlesArray[buttonIndex], newExceptArray[buttonIndex], blockCount);
 	console.log(id, newTitlesArray[buttonIndex], newExceptArray[buttonIndex], blockCount);
@@ -680,14 +728,40 @@ async function askGpt(prompt, tokens) {
 						temperature: 0.5,
 						model: 'gpt-4-1106-preview',
 					},
-					success: function (response) {
-						try {
-							response = JSON.parse(response);
-							console.log(response);
-							let content = response['answer'].replace(/^"(.*)"$/, '$1');
-							resolve(content.trim()); // Resolve the promise with the response content
-						} catch (e) {
-							reject(e); // Reject the promise if there is an error (e.g., in parsing the response)
+					success: async function (response) {
+						let task_id = response.split('"')[3];
+						task_id = task_id.split('"')[0];
+						let finished = false;
+						while (!finished) {
+							jQuery.ajax({
+								url: myAjax.ajaxurl,
+								method: 'POST',
+								data: {
+									action: 'check_task_status',
+									task_id: task_id,
+								},
+								success: function (response) {
+									console.log(response);
+									if (!response.includes('Task still processing.')) {
+										console.log(response);
+										finished = true;
+										try {
+											let content = response.replace(/^"(.*)"$/, '$1');
+											resolve(content.trim()); // Resolve the promise with the response content
+										} catch (e) {
+											reject(e); // Reject the promise if there is an error (e.g., in parsing the response)
+										}
+									} else {
+										console.log("Task still processing. Let's wait 1 seconds and try again.");
+										console.log(response);
+									}
+								},
+								error: function (error) {
+									console.log(error);
+									reject(e);
+								},
+							});
+							await new Promise((r) => setTimeout(r, 3000));
 						}
 					},
 					error: function (error) {
@@ -699,7 +773,7 @@ async function askGpt(prompt, tokens) {
 	} catch (error) {
 		console.error('Error:', error.message);
 		alert(
-			'Es ist ein Fehler aufgetreten. Bitte warten Sie ein paar Sekunden und versuchen es dan erneut. Bei weiteren Probleme kontaktieren Sie bitte den Support'
+			'Es ist ein Fehler aufgetreten. Bitte warten Sie ein paar Sekunden und versuchen es dann erneut. Bei weiteren Probleme kontaktieren Sie bitte den Support'
 		);
 		throw error;
 	}
@@ -745,7 +819,6 @@ async function multipleAction() {
 	newMetasAll = document.getElementsByClassName('newMetaShorted');
 	if (document.getElementById('nmd_multiple_action').value == 'submit') {
 		setLoadingScreen();
-		loadingText.innerHTML = 'Speichere Änderungen...';
 		for (let index = 0; index < boxes.length; index++) {
 			if (boxes[index].checked) {
 				blockCounter = boxes[index].value;
@@ -758,10 +831,9 @@ async function multipleAction() {
 	}
 	if (document.getElementById('nmd_multiple_action').value == 'retry' || !firstTry) {
 		setLoadingScreen();
-		loadingText.innerHTML = 'Generiere Snippets...';
 		for (let index = 0; index < boxes.length; index++) {
 			if (boxes[index].checked) {
-				retry(boxes[index].value, idArray[boxes[index].value], index);
+				retry(boxes[index].value, idArray[boxes[index].value]);
 			}
 		}
 		removeLoadingScreen();
@@ -1058,19 +1130,176 @@ function showSubFolder(n) {
 		document.getElementById('subFolderArrowDown' + n).style.display = 'block';
 	}
 }
+let first = true;
+let startText = true;
 function setLoadingScreen() {
+	// Create a new div element
+	if (first) {
+		first = false;
+		var overlayDiv = document.createElement('div');
+		overlayDiv.id = 'overlay';
+		overlayDiv.style.display = 'none';
+
+		// Set the inner HTML of the new div
+		overlayDiv.innerHTML = `
+			<div class="lds-roller">
+				<div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+				<p style="position: absolute;top: 16px;left: 16px;">Loading</p>
+				<span class="overlayBackground">
+					<p id="loadingText" style="margin-bottom: 82px;">some Text</p>
+				</span>
+			</div>`;
+
+		// Find the wp-wrap element and append the new div
+		var wpWrap = document.getElementById('wpwrap');
+		if (wpWrap) {
+			wpWrap.appendChild(overlayDiv);
+			loadingText = document.getElementById('loadingText');
+		} else {
+			console.error('Element with id "wpwrap" not found.');
+		}
+	}
+
 	document.getElementById('overlay').style.display = 'flex';
 	document.body.classList.add('blurred');
+	if (startText) {
+		startText = false;
+		startCycleText();
+	}
 }
+
 function removeLoadingScreen() {
 	document.getElementById('overlay').style.display = 'none';
 	document.body.classList.remove('blurred');
+	startText = true;
 }
+
+const sprueche = [
+	'Deine Website wird gerade mit maßgeschneiderten Meta-Daten ausgestattet.',
+	'Unsere SEO-Zauberkünstler arbeiten daran, deine Meta-Daten zu optimieren.',
+	'Die Kunst der Meta-Daten-Generierung erfordert ihre Zeit – wir sind gleich fertig!',
+	'Optimierte Meta-Daten sind der Schlüssel zum Online-Erfolg – wir kümmern uns darum!',
+	'Während wir hier arbeiten, entstehen Meta-Daten, die deine Website in den Suchergebnissen hervorheben werden.',
+	'Wir formen Meta-Daten in effektive Werkzeuge für dein digitales Marketing um.',
+	'Die Meta-Daten-Generierung ist im Gange – bald wird deine Website besser gefunden werden!',
+	'Du kannst entspannt weiter diese Sprüche lesen, während wir deine Meta-Daten optimieren.',
+	'Diese kurze Ladezeit ist nix im Vergleich zu dem, was die manuelle Meta-Daten-Generierung erfordert hätte.',
+	'20 Meta-Daten auf einmal zu generieren schafft kein Mensch – zum Glück gibt es uns!',
+	'Während die Datenstrategen tüfteln, werden deine Meta-Daten optimiert.',
+	'Geduld zahlt sich aus – bald werden deine Meta-Daten für Aufmerksamkeit sorgen.',
+	'Deine Website wird mit maßgeschneiderten Meta-Daten ausgestattet – der Schlüssel zu höheren Rankings!',
+	'Während wir hier laden, verbessern sich deine Chancen, online gefunden zu werden.',
+	'Gib uns diese kurze Zeit, um deine Website mit optimierten Meta-Daten auszustatten.',
+	'Während wir hier arbeiten, werden deine Konkurrenten noch darüber nachdenken, wie sie ihre Meta-Daten optimieren können.',
+];
+
+async function startCycleText() {
+	let loadingTextElement = document.getElementById('loadingText');
+	loadingTextElement.innerHTML = 'Dieser Vorgang kann einige Minuten dauern. Bitte warten Sie einen Moment...';
+	await new Promise((r) => setTimeout(r, 5000));
+	while (!startText) {
+		randInt = Math.floor(Math.random() * sprueche.length);
+		loadingTextElement.innerHTML = sprueche[randInt];
+		randTImeout = Math.floor(Math.random() * 1000) + 8000;
+		await new Promise((r) => setTimeout(r, randTImeout));
+	}
+}
+
 function showSettings() {
 	document.getElementById('settingsOverlay').style.display = 'block';
 	document.getElementById('overlaySettings').style.display = 'block';
+	document.body.style.height = '200%';
 }
 function closeSettings() {
 	document.getElementById('settingsOverlay').style.display = 'none';
 	document.getElementById('overlaySettings').style.display = 'none';
 }
+function createFolderStructure() {
+	let data = metaTemplateList;
+
+	const container = document.getElementById('templateContainer');
+	let htmlContent = '';
+	let folderCount = 0;
+	let subFolderCount = 0;
+
+	let arrowUp =
+		'<svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 448 512"><path d="M201.4 137.4c12.5-12.5 32.8-12.5 45.3 0l160 160c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L224 205.3 86.6 342.6c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3l160-160z" /></svg>';
+	let arrowDown =
+		'<svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 448 512"><path d="M201.4 342.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 274.7 86.6 137.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z" /></svg>';
+	let editPen =
+		'<svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z"/></svg>';
+	let deletIcon =
+		'<svg xmlns="http://www.w3.org/2000/svg" height="1.3em" viewBox="0 0 448 512"><path d="M170.5 51.6L151.5 80h145l-19-28.4c-1.5-2.2-4-3.6-6.7-3.6H177.1c-2.7 0-5.2 1.3-6.7 3.6zm147-26.6L354.2 80H368h48 8c13.3 0 24 10.7 24 24s-10.7 24-24 24h-8V432c0 44.2-35.8 80-80 80H112c-44.2 0-80-35.8-80-80V128H24c-13.3 0-24-10.7-24-24S10.7 80 24 80h8H80 93.8l36.7-55.1C140.9 9.4 158.4 0 177.1 0h93.7c18.7 0 36.2 9.4 46.6 24.9zM80 128V432c0 17.7 14.3 32 32 32H336c17.7 0 32-14.3 32-32V128H80zm80 64V400c0 8.8-7.2 16-16 16s-16-7.2-16-16V192c0-8.8 7.2-16 16-16s16 7.2 16 16zm80 0V400c0 8.8-7.2 16-16 16s-16-7.2-16-16V192c0-8.8 7.2-16 16-16s16 7.2 16 16zm80 0V400c0 8.8-7.2 16-16 16s-16-7.2-16-16V192c0-8.8 7.2-16 16-16s16 7.2 16 16z"/></svg>';
+
+	Object.keys(data).forEach((folder) => {
+		htmlContent += `<div class="folderTab">`;
+		htmlContent += `<div class="folderHeaderFlex" onclick="showFolder(${folderCount})">`;
+		htmlContent += `<h2 style='margin-top: 0px'>${folder}</h2>`;
+		htmlContent += `<span class="editPen" onclick="editFolder('${folder}')">` + editPen + `</span>`;
+		htmlContent += `<span onclick="delete_template_Folder('${folder}')">` + deletIcon + `</span>`;
+		htmlContent += `<span id="folderArrowUp${folderCount}" style="margin-right: 1rem;">` + arrowUp + `</span>`;
+		htmlContent += `<span id="folderArrowDown${folderCount}" style="margin-right: 1rem; display: none;">` + arrowDown + `</span>`;
+		htmlContent += `</div>`;
+		htmlContent += `<div id='folderContainer${folderCount}' class='folderContainer'>`;
+
+		Object.keys(data[folder]).forEach((subFolder) => {
+			htmlContent += `<div class='folderTab'>`;
+			htmlContent += `<div class='folderHeaderFlex' onclick='showSubFolder(${subFolderCount})'>`;
+			htmlContent += `<h3 class='subFolderHeader'>${subFolder}</h3>`;
+			htmlContent += `<span class="editPen" onclick="editFolder('${subFolder}')">` + editPen + `</span>`;
+			htmlContent += `<span onclick="delete_template_subFolder('${folder},${subFolder}')">` + deletIcon + `</span>`;
+			htmlContent += `<span id="subFolderArrowUp${subFolderCount}" style="margin-right: 1rem;">` + arrowUp + `</span>`;
+			htmlContent +=
+				`<span id="subFolderArrowDown${subFolderCount}" style="margin-right: 1rem; display: none;">` + arrowDown + `</span>`;
+			htmlContent += `</div>`;
+			htmlContent += `<div id='subFolderContainer${subFolderCount}' class='subFolderContainer'>`;
+
+			Object.keys(data[folder][subFolder]).forEach((template) => {
+				htmlContent += `<div class="template_card" onclick="get_template('${folder}', '${subFolder}', '${template}')">`;
+				htmlContent += `<div class="template_left">`;
+				htmlContent += `<span title="${data[folder][subFolder][template][0]}" style="margin-right:0">${template}</span>`;
+				htmlContent += `<span class="editPen" onclick="editFolder('${template}')">` + editPen + `</span>`;
+				htmlContent += `</div>`;
+				htmlContent += `<span onclick="delete_template('${folder}', '${subFolder}', '${template}')">` + deletIcon + `</span>`;
+				htmlContent += `</div>`;
+			});
+
+			htmlContent += `</div>`; // Close subFolderContainer
+			htmlContent += `</div>`; // Close subFolderTab
+			subFolderCount++;
+		});
+
+		htmlContent += `</div>`; // Close folderContainer
+		htmlContent += `</div>`; // Close folderTab
+		folderCount++;
+	});
+
+	container.innerHTML = htmlContent + container.innerHTML;
+}
+
+function setFolderOptions() {
+	let folderOptions = document.getElementById('unterordner_select');
+	let data = metaTemplateList;
+	let htmlContent = '';
+
+	for (const folder in data) {
+		for (const subFolder in data[folder]) {
+			htmlContent += `<option value="${folder},${subFolder}">${folder}: ${subFolder}</option>`;
+		}
+	}
+
+	folderOptions.innerHTML = htmlContent;
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+	await new Promise((r) => setTimeout(r, 1000));
+	createFolderStructure();
+	setFolderOptions();
+});

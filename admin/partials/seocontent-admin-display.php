@@ -242,12 +242,12 @@ do_action('scriptTest4');
                             <button onclick="importJson('variables')">Variablen importieren</button>
                         </div>
                         <br>
-                        <div class="rightButton" style="display: flex;" id="drop-area-variables">
+                        <div class="rightButton" style="display: flex;" id="drop-area-meta">
                             <div class="custom-file-upload">
                                 <label for="metaTemplateFile" class="custom-file-label">Datei ziehen oder klicken</label>
                                 <input type="file" name="file" id="metaTemplateFile" accept=".json">
                             </div>
-                            <p id="variablesFileText"></p>
+                            <p id="metaTemplateFileText"></p>
                             <button onclick="importJson('meta')">Meta-Daten Vorlagen importieren</button>
                         </div>
                         <br>

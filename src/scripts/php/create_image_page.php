@@ -58,7 +58,7 @@ function gpt_create_image()
 
     if ($premium == "true") {
         // Logic when $premium is true, diverting to Flask App
-        $url = 'http://94.130.105.89/api/create_image'; // Replace with your Flask app URL
+        $url = 'https://plugin.seo-kueche.de/api/create_image'; // Replace with your Flask app URL
         $data = array(
             'prompt' =>  $prompt,
             "n" => 1,
@@ -87,7 +87,8 @@ function gpt_create_image()
     curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData);
     curl_setopt($ch, CURLOPT_HTTPHEADER, array(
         'Content-Type: application/json',
-        'Authorization: Bearer ' . $apiKey
+        'Authorization: Bearer ' . $apiKey,
+        'Seo-Header: ' . content_url()
     ));
 
 
@@ -150,7 +151,7 @@ function gpt_image_variation()
 
     if ($premium == "true") {
         // Set cURL options
-        curl_setopt($ch, CURLOPT_URL, "http://94.130.105.89/api/image_variation");
+        curl_setopt($ch, CURLOPT_URL, "https://plugin.seo-kueche.de/api/image_variation");
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, array(
@@ -178,9 +179,9 @@ function gpt_image_variation()
         $jsonArray = json_decode($jsonString, true);
 
         $apiKey = $jsonArray['apiKey'];
-        $headers = array();
+
         $headers[] = "Authorization: Bearer " . $apiKey;
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: Bearer ' . $apiKey, 'Content-Type: application/json', 'Seo-Header: ' . content_url()));
 
         $result = curl_exec($ch);
 
@@ -221,9 +222,10 @@ function gpt_edit_image()
     $ch = curl_init();
     if ($premium == "true") {
 
-        curl_setopt($ch, CURLOPT_URL, "http://94.130.105.89/api/edit_image");
+        curl_setopt($ch, CURLOPT_URL, "https://plugin.seo-kueche.de/api/edit_image");
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: multipart/form-data', 'Seo-Header: ' . content_url()));
         curl_setopt($ch, CURLOPT_POSTFIELDS, array(
             'image' => new CURLFile($image_path),
             'mask' => new CURLFile($mask_path),
@@ -254,9 +256,8 @@ function gpt_edit_image()
         $jsonArray = json_decode($jsonString, true);
 
         $apiKey = $jsonArray['apiKey'];
-        $headers = array();
-        $headers[] = "Authorization: Bearer " . $apiKey;
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: Bearer ' . $apiKey, 'Content-Type: application/json'));
+
 
         $result = curl_exec($ch);
 
@@ -501,7 +502,7 @@ function nmd_create_image_callback()
                     </div>
                     <textarea name="editPrompt" id="editPrompt" cols="30" rows="1" placeholder="Hier Prompt für die Bildbearbeitung eingeben"></textarea>
                     <button class="button action" id="submit-button">Inpaint absenden</button>
-                    <button class="button action" id="submit-button" onclick="imageVariation()">Variante erstellen(ohne Prompt)</button>
+                    <!-- <button class="button action" id="submit-button" onclick="imageVariation()">Variante erstellen(ohne Prompt)</button> -->
                     <button class="button action" id="submit-button" onclick="reuseImage()">Erstelltes Bild in die bearbeitung senden</button>
                     <button class="button action" onclick="saveEditedImage()">Bild speichern</button>
                     <input id="image_url" type="text" name="image_url" style="display: none;" />

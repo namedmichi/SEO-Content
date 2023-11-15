@@ -16,7 +16,7 @@
  * Plugin Name:       SEO Content
  * Plugin URI:        https://www.seo-kueche.de
  * Description:       KI-gestütztes Plugin zur automatisierten Erstellung von SEO-konformen Inhalten und Meta-Daten.
- * Version:           1.0.5
+ * Version:           1.0.7
  * Author:            SEO Küche
  * Author URI:        https://www.seo-kueche.de
  * License:           GPL-2.0+
@@ -292,7 +292,7 @@ function update_seocontent_template_meta()
 	$settings = json_decode($json_data, true);
 
 	// Aktualisiere die Option "seocontent_settings" mit den neuen JSON-Daten
-	update_option('seocontent_templates', $settings);
+	update_option('seocontent_templates_meta', $settings);
 }
 
 // Füge deine benutzerdefinierte Hook zu WordPress hinzu
@@ -423,6 +423,81 @@ add_action('wp_footer', 'insert_page_script');
 
 
 
+register_activation_hook(__FILE__, 'check_and_create_seo_table_keywords');
+
+//Creates the table for the meta description when activating the plugin if it doesn't exist
+function check_and_create_seo_table_keywords()
+{
+	global $wpdb;
+	$table_name = $wpdb->prefix . 'seocontent_keywords';
+
+	if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
+		// Table not in database. Create new table.
+		create_seo_table_keywords();
+	}
+}
+
+//Creates the table for the meta description
+function create_seo_table_keywords()
+{
+	global $wpdb;
+	$charset_collate = $wpdb->get_charset_collate();
+	$table_name = $wpdb->prefix . 'seocontent_keywords';
+
+	$sql = "CREATE TABLE $table_name (
+        id mediumint(9) NOT NULL AUTO_INCREMENT,
+        page_id mediumint(9) NOT NULL,
+        keyword text NOT NULL,
+        PRIMARY KEY  (id)
+    ) $charset_collate;";
+
+	require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+	dbDelta($sql);
+}
+
+
+function get_page_keyword()
+{
+	$page_id = isset($_POST['pageId']) ? $_POST['pageId'] : '';
+
+	global $wpdb;
+	$table_name = $wpdb->prefix . 'seocontent_keywords';
+
+	$result = $wpdb->get_row("SELECT * FROM $table_name WHERE page_id = $page_id");
+
+	echo json_encode($result);
+
+	wp_die();
+}
+
+function update_page_keyword()
+{
+	$page_id = isset($_POST['page_id']) ? $_POST['page_id'] : '';
+	$keyword = isset($_POST['keyword']) ? $_POST['keyword'] : '';
+
+	global $wpdb;
+	$table_name = $wpdb->prefix . 'seocontent_keywords';
+
+	// Update the Keyword with the new one
+
+	$wpdb->update(
+		$table_name,
+		array(
+			'keyword' => $keyword
+		),
+		array(
+			'page_id' => $page_id
+		)
+	);
+
+	wp_die();
+}
+
+
+add_action('wp_ajax_get_page_keyword', 'get_page_keyword');
+
+add_action('wp_ajax_update_page_keyword', 'update_page_keyword');
+
 register_activation_hook(__FILE__, 'check_and_create_seo_table');
 
 //Creates the table for the meta description when activating the plugin if it doesn't exist
@@ -473,6 +548,24 @@ function insert_page_meta_description()
 
 // Hook the function into wp_head
 add_action('wp_head', 'insert_page_meta_description');
+
+
+
+
+
+function myplugin_enqueue_custom_js()
+{
+	// Use the `admin_enqueue_scripts` action to enqueue your script
+	// Ensure that jQuery is loaded as it is a dependency for your script
+	wp_enqueue_script('myplugin-custom-js', plugin_dir_url(__FILE__) . 'custom-keywordfields.js', array('jquery'), '1.0', true);
+	wp_localize_script('myplugin-custom-js', 'myAjax', array('ajaxurl' => admin_url('admin-ajax.php')));
+}
+add_action('admin_enqueue_scripts', 'myplugin_enqueue_custom_js');
+
+
+
+
+
 
 
 

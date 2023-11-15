@@ -98,7 +98,7 @@ function create_image() {
 				error: function (error) {
 					console.log(error);
 					alert(
-						'Es ist ein Fehler aufgetreten. Bitte warten Sie ein paar Sekunden und versuchen es dan erneut. Bei weiteren Probleme kontaktieren Sie bitte den Support'
+						'Es ist ein Fehler aufgetreten. Bitte warten Sie ein paar Sekunden und versuchen es dann erneut. Bei weiteren Probleme kontaktieren Sie bitte den Support'
 					);
 					document.getElementById('overlay').style.display = 'none';
 					document.body.classList.remove('blurred');
@@ -297,7 +297,7 @@ submitButton.addEventListener('click', async () => {
 							imgUrl = json.data[0].url;
 						} catch (error) {
 							alert(
-								'Es ist ein Fehler aufgetreten. Bitte warten Sie ein paar Sekunden und versuchen es dan erneut. Bei weiteren Probleme kontaktieren Sie bitte den Support'
+								'Es ist ein Fehler aufgetreten. Bitte warten Sie ein paar Sekunden und versuchen es dann erneut. Bei weiteren Probleme kontaktieren Sie bitte den Support'
 							);
 						}
 
@@ -321,7 +321,7 @@ submitButton.addEventListener('click', async () => {
 					console.log(error);
 
 					alert(
-						'Es ist ein Fehler aufgetreten. Bitte warten Sie ein paar Sekunden und versuchen es dan erneut. Bei weiteren Probleme kontaktieren Sie bitte den Support'
+						'Es ist ein Fehler aufgetreten. Bitte warten Sie ein paar Sekunden und versuchen es dann erneut. Bei weiteren Probleme kontaktieren Sie bitte den Support'
 					);
 
 					document.getElementById('overlay').style.display = 'none';
@@ -363,7 +363,7 @@ function imageVariation() {
 					imgUrl = json.data[0].url;
 				} catch (error) {
 					alert(
-						'Es ist ein Fehler aufgetreten. Bitte warten Sie ein paar Sekunden und versuchen es dan erneut. Bei weiteren Probleme kontaktieren Sie bitte den Support'
+						'Es ist ein Fehler aufgetreten. Bitte warten Sie ein paar Sekunden und versuchen es dann erneut. Bei weiteren Probleme kontaktieren Sie bitte den Support'
 					);
 
 					document.getElementById('overlay').style.display = 'none';
@@ -385,7 +385,7 @@ function imageVariation() {
 				console.log(error);
 
 				alert(
-					'Es ist ein Fehler aufgetreten. Bitte warten Sie ein paar Sekunden und versuchen es dan erneut. Bei weiteren Probleme kontaktieren Sie bitte den Support'
+					'Es ist ein Fehler aufgetreten. Bitte warten Sie ein paar Sekunden und versuchen es dann erneut. Bei weiteren Probleme kontaktieren Sie bitte den Support'
 				);
 
 				document.getElementById('overlay').style.display = 'none';
@@ -564,13 +564,56 @@ function dataURLtoBlob(dataurl) {
 
 	return new Blob([u8arr], { type: mime });
 }
+let startText = true;
+
 function setLoadingScreen() {
 	document.getElementById('overlay').style.display = 'flex';
 	document.body.classList.add('blurred');
+	if (startText) {
+		startText = false;
+		startCycleText();
+	}
 }
 function removeLoadingScreen() {
 	document.getElementById('overlay').style.display = 'none';
 	document.body.classList.remove('blurred');
+	startText = true;
+}
+
+const sprueche = [
+	'Die Kunst der Bildgenerierung erfordert ihre Zeit – wir sind gleich fertig!',
+	'Unsere kreativen Pixelkünstler arbeiten im Hintergrund – gleich kommt etwas Beeindruckendes!',
+	'Jedes Bild ist ein kleines Meisterwerk – bitte habe Geduld während des Generierungsprozesses.',
+	'Das Erschaffen von visueller Magie braucht seine Zeit – wir sind auf dem richtigen Weg!',
+	'Bilder sagen mehr als tausend Worte – wir erstellen gerade welche für dich!',
+	'Während die Pixel tanzen, zaubern wir für dich beeindruckende Bilder!',
+	'Deine Website wird gleich mit atemberaubenden Grafiken verschönert.',
+	'Wir formen Pixel in Kunstwerke um – die Wartezeit wird sich lohnen!',
+	'Während wir arbeiten, entstehen einzigartige Bilder für deine Website.',
+	'Die Bildgenerierung ist im Gange... gleich ist es soweit!',
+	'Wie lange es wohl dauert so ein Bild selber zu erstellen? Zum Glück wirst du das nicht herausfinden müssen!',
+	'Diese Ladezeit ist der Schlüssel zu beeindruckenden Bildern, die deine Besucher fesseln werden.',
+	'Während wir hier laden, entstehen Bilder, die deine Konkurrenz beneiden wird.',
+	'In der Zeit, die wir hier brauchen, um Bilder zu erstellen, würden andere gerade erst mit dem Zeichnen beginnen.',
+	'Nutze diese Ladezeit, um zu erkennen, wie unsere Bildgenerierung dich voranbringt.',
+	'Gib uns diese kurze Zeit, um deine Website mit erstaunlichen Bildern zu verschönern.',
+	'Während wir hier arbeiten, haben andere noch nicht einmal angefangen, über Bilder nachzudenken.',
+];
+
+let firstImageTry = true;
+async function startCycleText() {
+	let loadingTextElement = document.getElementById('loadingText');
+	if (firstImageTry) {
+		loadingTextElement.innerHTML = 'Dieser Vorgang kann einige Minuten dauern. Bitte warten Sie einen Moment...';
+		await new Promise((r) => setTimeout(r, 5000));
+		firstImageTry = false;
+	}
+	while (!startText) {
+		randInt = Math.floor(Math.random() * sprueche.length);
+		loadingTextElement.innerHTML = sprueche[randInt];
+		randTImeout = Math.floor(Math.random() * 1000) + 8000;
+		await new Promise((r) => setTimeout(r, randTImeout));
+	}
 }
 
 jQuery(document).ready(function ($) {
