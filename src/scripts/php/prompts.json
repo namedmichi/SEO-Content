@@ -1,5 +1,5 @@
 {
-	"titlePrompt": "Verfasse einen Titel für einen Artikel über  {topic}  . Stil:  {stil} . Optimiere den Text auf folgende Keywords: {keywords} . Sollte zwischen 40 und 60 Zeichen lang sein.",
+	"titlePrompt": "Verfasse einen Titel für einen Artikel über  {topic}  . Stil:  {stil} . Optimiere den Text auf folgende Keywords wenn vorhanden: {keywords} . Sollte zwischen 40 und 60 Zeichen lang sein.",
 	"ueberschriftenPrompt": "Bitte erstelle exakt {ueberschriftenAnzahl} aufeinanderfolgende Überschriften im Still: {stil},  für eine regionale Leistungsseite eines Unternehmens über: {title}. Jede Überschrift sollte zwischen 40 und 60 Zeichen lang sein und als HTML <h2> formatiert werden. Optimiere die Überschriften auf die vorgegebenen Keywords wenn vorhanden: {keywords}",
 	"inhaltPrompt": "Der Text diese aufeinanderfolgenden Überschriften: {ueberschriften}. Schreibe pro Überschrift genau {absaetzeAnzahl} Absätze, die alle mindestens {woerter} Wörter umfassen. Achte auf die Verwendung folgender Keywords wenn vorhanden: {keywords}.",
 	"excerpPrompt": "Schreibe eine Metabeschreibung über den Titel {title} . Style: {stil}. Optimiere den Text auf folgende Keywords wenn vorhanden: {keywords}.  Muss zwischen 140 und 160 Zeichen lang sein. Schreibe nur die genannte anzahl an Absätzen;",

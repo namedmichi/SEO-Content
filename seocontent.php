@@ -239,166 +239,6 @@ function set_template_option_meta()
 
 
 
-// Definiere eine benutzerdefinierte Hook
-function update_seocontent_settings()
-{
-	// Pfad zur JSON-Datei in deinem Plugin-Verzeichnis
-	$json_file_path = plugin_dir_path(__FILE__) . 'src/scripts/php/settings.json';
-
-	// Lese den Inhalt der JSON-Datei
-	$json_data = file_get_contents($json_file_path);
-
-	// Konvertiere JSON in ein PHP-Array
-	$settings = json_decode($json_data, true);
-
-	// Aktualisiere die Option "seocontent_settings" mit den neuen JSON-Daten
-	update_option('seocontent_settings', $settings);
-}
-
-// Füge deine benutzerdefinierte Hook zu WordPress hinzu
-add_action('update_seocontent_settings_hook', 'update_seocontent_settings');
-
-
-
-// Definiere eine benutzerdefinierte Hook
-function update_seocontent_template()
-{
-	// Pfad zur JSON-Datei in deinem Plugin-Verzeichnis
-	$json_file_path = plugin_dir_path(__FILE__) . 'src/scripts/php/templateTest.json';
-
-	// Lese den Inhalt der JSON-Datei
-	$json_data = file_get_contents($json_file_path);
-
-	// Konvertiere JSON in ein PHP-Array
-	$settings = json_decode($json_data, true);
-
-	// Aktualisiere die Option "seocontent_settings" mit den neuen JSON-Daten
-	update_option('seocontent_templates', $settings);
-}
-
-// Füge deine benutzerdefinierte Hook zu WordPress hinzu
-add_action('update_seocontent_templates_hook', 'update_seocontent_template');
-
-// Definiere eine benutzerdefinierte Hook
-function update_seocontent_template_meta()
-{
-	// Pfad zur JSON-Datei in deinem Plugin-Verzeichnis
-	$json_file_path = plugin_dir_path(__FILE__) . 'src/scripts/php/metaPromptTemplates.json';
-
-	// Lese den Inhalt der JSON-Datei
-	$json_data = file_get_contents($json_file_path);
-
-	// Konvertiere JSON in ein PHP-Array
-	$settings = json_decode($json_data, true);
-
-	// Aktualisiere die Option "seocontent_settings" mit den neuen JSON-Daten
-	update_option('seocontent_templates_meta', $settings);
-}
-
-// Füge deine benutzerdefinierte Hook zu WordPress hinzu
-add_action('update_seocontent_templates_meta_hook', 'update_seocontent_template_meta');
-
-
-// Definiere eine benutzerdefinierte Hook
-function update_seocontent_variables()
-{
-	$json_file_path = plugin_dir_path(__FILE__) . 'src/scripts/php/variables.json';
-
-	$json_data = file_get_contents($json_file_path);
-
-	$settings = json_decode($json_data, true);
-
-	update_option('seocontent_variables', $settings);
-}
-
-
-add_action('update_seocontent_variables_hook', 'update_seocontent_variables');
-
-
-function import_seocontent_template()
-{
-
-	$templates  = isset($_POST['templates']) ? $_POST['templates'] : '';
-
-	$json_file_path = plugin_dir_path(__FILE__) . 'src/scripts/php/templateTest.json';
-
-	$jsonData = json_encode($templates, JSON_PRETTY_PRINT);
-	file_put_contents($json_file_path, $jsonData);
-
-	update_option('seocontent_templates', $templates);
-	wp_die();
-}
-
-
-
-add_action('wp_ajax_import_seocontent_template_action', 'import_seocontent_template');
-add_action('wp_ajax_nopriv_import_seocontent_template_action', 'import_seocontent_template'); // Für nicht angemeldete Benutzer
-
-
-function import_seocontent_template_meta()
-{
-
-	$meta  = isset($_POST['meta']) ? $_POST['meta'] : '';
-
-	$json_file_path = plugin_dir_path(__FILE__) . 'src/scripts/php/metaPromptTemplates.json';
-
-	$jsonData = json_encode($meta, JSON_PRETTY_PRINT);
-	file_put_contents($json_file_path, $jsonData);
-
-	update_option('seocontent_templates_meta', $meta);
-	wp_die();
-}
-
-
-
-add_action('wp_ajax_import_seocontent_template_meta_action', 'import_seocontent_template_meta');
-add_action('wp_ajax_nopriv_import_seocontent_template_meta_action', 'import_seocontent_template_meta'); // Für nicht angemeldete Benutzer
-
-
-
-add_action('wp_ajax_update_seocontent_settings_action', 'update_seocontent_settings_action');
-add_action('wp_ajax_nopriv_update_seocontent_settings_action', 'update_seocontent_settings_action'); // Für nicht angemeldete Benutzer
-
-function update_seocontent_settings_action()
-{
-	// Führe die benutzerdefinierte Hook aus
-	do_action('update_seocontent_settings_hook');
-
-	wp_die(); // Beende die AJAX-Anfrage
-}
-
-
-add_action('wp_ajax_update_seocontent_templates_action', 'update_seocontent_templates_action');
-add_action('wp_ajax_nopriv_update_seocontent_templates_action', 'update_seocontent_templates_action'); // Für nicht angemeldete Benutzer
-
-function update_seocontent_templates_action()
-{
-	// Führe die benutzerdefinierte Hook aus
-	do_action('update_seocontent_templates_hook');
-
-	wp_die(); // Beende die AJAX-Anfrage
-}
-add_action('wp_ajax_update_seocontent_templates_meta_action', 'update_seocontent_templates_meta_action');
-add_action('wp_ajax_nopriv_update_seocontent_templates_meta_action', 'update_seocontent_templates_meta_action'); // Für nicht angemeldete Benutzer
-
-function update_seocontent_templates_meta_action()
-{
-	// Führe die benutzerdefinierte Hook aus
-	do_action('update_seocontent_templates_meta_hook');
-
-	wp_die(); // Beende die AJAX-Anfrage
-}
-add_action('wp_ajax_update_seocontent_variables_action', 'update_seocontent_variables_action');
-add_action('wp_ajax_nopriv_update_seocontent_variables_action', 'update_seocontent_variables_action'); // Für nicht angemeldete Benutzer
-
-function update_seocontent_variables_action()
-{
-	// Führe die benutzerdefinierte Hook aus
-	do_action('update_seocontent_variables_hook');
-
-	wp_die(); // Beende die AJAX-Anfrage
-}
-
 // Adds the FAQ from "Text erstellen" into the footer
 
 function insert_page_script()
@@ -456,47 +296,6 @@ function create_seo_table_keywords()
 }
 
 
-function get_page_keyword()
-{
-	$page_id = isset($_POST['pageId']) ? $_POST['pageId'] : '';
-
-	global $wpdb;
-	$table_name = $wpdb->prefix . 'seocontent_keywords';
-
-	$result = $wpdb->get_row("SELECT * FROM $table_name WHERE page_id = $page_id");
-
-	echo json_encode($result);
-
-	wp_die();
-}
-
-function update_page_keyword()
-{
-	$page_id = isset($_POST['page_id']) ? $_POST['page_id'] : '';
-	$keyword = isset($_POST['keyword']) ? $_POST['keyword'] : '';
-
-	global $wpdb;
-	$table_name = $wpdb->prefix . 'seocontent_keywords';
-
-	// Update the Keyword with the new one
-
-	$wpdb->update(
-		$table_name,
-		array(
-			'keyword' => $keyword
-		),
-		array(
-			'page_id' => $page_id
-		)
-	);
-
-	wp_die();
-}
-
-
-add_action('wp_ajax_get_page_keyword', 'get_page_keyword');
-
-add_action('wp_ajax_update_page_keyword', 'update_page_keyword');
 
 register_activation_hook(__FILE__, 'check_and_create_seo_table');
 
@@ -632,6 +431,12 @@ function enqueue_custom_scripts()
 	wp_enqueue_media();
 }
 add_action('admin_enqueue_scripts', 'enqueue_custom_scripts');
+
+
+include_once('src/scripts/php/ajax/ajax_general.php');
+include_once('src/scripts/php/ajax/ajax_meta_page.php');
+include_once('src/scripts/php/ajax/ajax_image_page.php');
+include_once('src/scripts/php/ajax/ajax_content_page.php');
 
 
 

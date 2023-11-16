@@ -305,3 +305,8 @@ input {
 .flexCenter input {
 	margin-right: 4px;
 }
+#seoErrorMsg {
+	font-size: 16px;
+	color: red;
+	font-weight: bolder;
+}

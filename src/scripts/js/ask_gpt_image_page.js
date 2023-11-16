@@ -63,9 +63,7 @@ request2.onreadystatechange = function () {
 request2.send();
 
 function create_image() {
-	document.getElementById('overlay').style.display = 'flex';
-	document.body.classList.add('blurred');
-	document.body.classList.add('no-scroll');
+	setLoadingScreen();
 	count = document.getElementById('count').value;
 	image_prompt = document.getElementById('nmd_image_prompt').value;
 	if (count == '') {
@@ -78,35 +76,67 @@ function create_image() {
 	let checkboxes = document.getElementsByName('selectImage');
 	for (let index = 1; index <= count; index++) {
 		checkboxes[index - 1].checked = true;
-		jQuery(document).ready(function ($) {
-			$.ajax({
-				url: myAjax.ajaxurl,
-				type: 'POST',
-				data: {
-					action: 'gpt_create_image',
-					image_prompt: image_prompt,
-					premium: premium,
-				},
-				success: function (response) {
-					response = response.slice(0, -1);
-					console.log(response);
-					document.getElementById('nmd_image_' + index).src = response;
-					document.getElementById('overlay').style.display = 'none';
-					document.body.classList.remove('blurred');
-					document.body.classList.remove('no-scroll');
-				},
-				error: function (error) {
-					console.log(error);
-					alert(
-						'Es ist ein Fehler aufgetreten. Bitte warten Sie ein paar Sekunden und versuchen es dann erneut. Bei weiteren Probleme kontaktieren Sie bitte den Support'
-					);
-					document.getElementById('overlay').style.display = 'none';
-					document.body.classList.remove('blurred');
-					document.body.classList.remove('no-scroll');
-				},
-			});
-		});
+		makeImageRequest(image_prompt, premium, index);
 	}
+}
+
+async function makeImageRequest(image_prompt, premium, index) {
+	jQuery(document).ready(function ($) {
+		$.ajax({
+			url: myAjax.ajaxurl,
+			type: 'POST',
+			data: {
+				action: 'gpt_create_image',
+				image_prompt: image_prompt,
+				premium: premium,
+			},
+			success: async function (response) {
+				let task_id = JSON.parse(response)['task_id'];
+				let finished = false;
+				while (!finished) {
+					jQuery.ajax({
+						url: myAjax.ajaxurl,
+						method: 'POST',
+						data: {
+							action: 'check_task_status_image',
+							task_id: task_id,
+						},
+						success: function (response) {
+							console.log(response);
+							if (!response.includes('Task still processing.')) {
+								finished = true;
+								console.log(response);
+								let obj = JSON.parse(response);
+								response = obj['data'][0]['url'];
+								document.getElementById('nmd_image_' + index).src = response;
+								removeLoadingScreen();
+							} else if (response.includes('failed.')) {
+								alert(
+									'Es ist ein Fehler aufgetreten. Bitte warten Sie ein paar Sekunden und versuchen es dann erneut. Bei weiteren Probleme kontaktieren Sie bitte den Support'
+								);
+								removeLoadingScreen();
+							} else {
+								console.log("Task still processing. Let's wait 1 seconds and try again.");
+								console.log(response);
+							}
+						},
+						error: function (error) {
+							console.log(error);
+							finished = true;
+						},
+					});
+					await new Promise((r) => setTimeout(r, 3000));
+				}
+			},
+			error: function (error) {
+				console.log(error);
+				alert(
+					'Es ist ein Fehler aufgetreten. Bitte warten Sie ein paar Sekunden und versuchen es dann erneut. Bei weiteren Probleme kontaktieren Sie bitte den Support'
+				);
+				removeLoadingScreen();
+			},
+		});
+	});
 }
 
 function add_image() {
@@ -285,37 +315,62 @@ submitButton.addEventListener('click', async () => {
 					prompt: document.getElementById('editPrompt').value,
 					premium: premium,
 				},
-				success: function (response) {
-					response = response.slice(0, -1);
-					let json = JSON.parse(response);
-					let imgUrl;
-					try {
-						console.log(json[0].url);
-						imgUrl = json[0].url;
-					} catch (error) {
-						try {
-							imgUrl = json.data[0].url;
-						} catch (error) {
-							alert(
-								'Es ist ein Fehler aufgetreten. Bitte warten Sie ein paar Sekunden und versuchen es dann erneut. Bei weiteren Probleme kontaktieren Sie bitte den Support'
-							);
-						}
+				success: async function (response) {
+					let task_id = JSON.parse(response)['task_id'];
+					let finished = false;
+					while (!finished) {
+						jQuery.ajax({
+							url: myAjax.ajaxurl,
+							method: 'POST',
+							data: {
+								action: 'check_task_status_image',
+								task_id: task_id,
+							},
+							success: function (response) {
+								console.log(response);
+								if (!response.includes('Task still processing.')) {
+									finished = true;
+									let json = JSON.parse(response);
+									let imgUrl;
+									try {
+										console.log(json[0].url);
+										imgUrl = json[0].url;
+									} catch (error) {
+										try {
+											imgUrl = json.data[0].url;
+										} catch (error) {
+											alert(
+												'Es ist ein Fehler aufgetreten. Bitte warten Sie ein paar Sekunden und versuchen es dann erneut. Bei weiteren Probleme kontaktieren Sie bitte den Support'
+											);
+										}
 
-						document.getElementById('overlay').style.display = 'none';
-						document.body.classList.remove('blurred');
-						document.body.classList.remove('no-scroll');
+										removeLoadingScreen();
+									}
+									document.getElementById('editedImage').src = imgUrl;
+									document.getElementById('editedImage').style.height =
+										document.getElementById('image-canvas').getContext('2d').canvas.height + 'px';
+									document.getElementById('editedImage').style.width =
+										document.getElementById('image-canvas').getContext('2d').canvas.width + 'px';
+									ctx.drawImage(orgImage, 0, 0, orgImage.width, orgImage.height);
+
+									removeLoadingScreen();
+								} else if (response.includes('failed.')) {
+									alert(
+										'Es ist ein Fehler aufgetreten. Bitte warten Sie ein paar Sekunden und versuchen es dann erneut. Bei weiteren Probleme kontaktieren Sie bitte den Support'
+									);
+									removeLoadingScreen();
+								} else {
+									console.log("Task still processing. Let's wait 1 seconds and try again.");
+									console.log(response);
+								}
+							},
+							error: function (error) {
+								console.log(error);
+								finished = true;
+							},
+						});
+						await new Promise((r) => setTimeout(r, 3000));
 					}
-					document.getElementById('editedImage').src = imgUrl;
-
-					document.getElementById('editedImage').style.height =
-						document.getElementById('image-canvas').getContext('2d').canvas.height + 'px';
-					document.getElementById('editedImage').style.width =
-						document.getElementById('image-canvas').getContext('2d').canvas.width + 'px';
-					ctx.drawImage(orgImage, 0, 0, orgImage.width, orgImage.height);
-
-					document.getElementById('overlay').style.display = 'none';
-					document.body.classList.remove('blurred');
-					document.body.classList.remove('no-scroll');
 				},
 				error: function (error) {
 					console.log(error);
@@ -333,68 +388,60 @@ submitButton.addEventListener('click', async () => {
 	};
 });
 
-function imageVariation() {
-	if (orgFile == null || orgFile == undefined) {
-		alert('Bitte wählen Sie ein Bild aus');
-		return;
-	}
-	let baseImage = orgFile;
-	let splitarray = baseImage.split('base64,');
+// function imageVariation() {
+// 	if (orgFile == null || orgFile == undefined) {
+// 		alert('Bitte wählen Sie ein Bild aus');
+// 		return;
+// 	}
+// 	let baseImage = orgFile;
+// 	let splitarray = baseImage.split('base64,');
 
-	document.getElementById('overlay').style.display = 'flex';
-	document.body.classList.add('blurred');
-	document.body.classList.add('no-scroll');
-	loadingText.innerHTML = 'Bild wird bearbeitet...';
-	jQuery(document).ready(function ($) {
-		$.ajax({
-			url: myAjax.ajaxurl,
-			type: 'POST',
-			data: {
-				action: 'gpt_image_variation',
-				orgBase64: splitarray[1],
-				premium: premium,
-			},
-			success: function (response) {
-				response = response.slice(0, -1);
-				let json = JSON.parse(response);
-				let imgUrl;
-				try {
-					console.log(json.data[0].url);
-					imgUrl = json.data[0].url;
-				} catch (error) {
-					alert(
-						'Es ist ein Fehler aufgetreten. Bitte warten Sie ein paar Sekunden und versuchen es dann erneut. Bei weiteren Probleme kontaktieren Sie bitte den Support'
-					);
+// 	setLoadingScreen();
+// 	loadingText.innerHTML = 'Bild wird bearbeitet...';
+// 	jQuery(document).ready(function ($) {
+// 		$.ajax({
+// 			url: myAjax.ajaxurl,
+// 			type: 'POST',
+// 			data: {
+// 				action: 'gpt_image_variation',
+// 				orgBase64: splitarray[1],
+// 				premium: premium,
+// 			},
+// 			success: function (response) {
+// 				response = response.slice(0, -1);
+// 				let json = JSON.parse(response);
+// 				let imgUrl;
+// 				try {
+// 					console.log(json.data[0].url);
+// 					imgUrl = json.data[0].url;
+// 				} catch (error) {
+// 					alert(
+// 						'Es ist ein Fehler aufgetreten. Bitte warten Sie ein paar Sekunden und versuchen es dann erneut. Bei weiteren Probleme kontaktieren Sie bitte den Support'
+// 					);
 
-					document.getElementById('overlay').style.display = 'none';
-					document.body.classList.remove('blurred');
-					document.body.classList.remove('no-scroll');
-				}
-				document.getElementById('editedImage').src = imgUrl;
+// 					removeLoadingScreen();
+// 				}
+// 				document.getElementById('editedImage').src = imgUrl;
 
-				document.getElementById('editedImage').style.height =
-					document.getElementById('image-canvas').getContext('2d').canvas.height + 'px';
-				document.getElementById('editedImage').style.width =
-					document.getElementById('image-canvas').getContext('2d').canvas.width + 'px';
+// 				document.getElementById('editedImage').style.height =
+// 					document.getElementById('image-canvas').getContext('2d').canvas.height + 'px';
+// 				document.getElementById('editedImage').style.width =
+// 					document.getElementById('image-canvas').getContext('2d').canvas.width + 'px';
 
-				document.getElementById('overlay').style.display = 'none';
-				document.body.classList.remove('blurred');
-				document.body.classList.remove('no-scroll');
-			},
-			error: function (error) {
-				console.log(error);
+// 				removeLoadingScreen();
+// 			},
+// 			error: function (error) {
+// 				console.log(error);
 
-				alert(
-					'Es ist ein Fehler aufgetreten. Bitte warten Sie ein paar Sekunden und versuchen es dann erneut. Bei weiteren Probleme kontaktieren Sie bitte den Support'
-				);
+// 				alert(
+// 					'Es ist ein Fehler aufgetreten. Bitte warten Sie ein paar Sekunden und versuchen es dann erneut. Bei weiteren Probleme kontaktieren Sie bitte den Support'
+// 				);
 
-				document.getElementById('overlay').style.display = 'none';
-				document.body.classList.remove('blurred');
-				document.body.classList.remove('no-scroll');
-			},
-		});
-	});
-}
+// 				removeLoadingScreen();
+// 			},
+// 		});
+// 	});
+// }
 
 function draw() {
 	mergeAndExport();

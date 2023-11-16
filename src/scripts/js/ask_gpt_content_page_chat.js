@@ -441,6 +441,8 @@ async function askGpt(prompt, tokens) {
 		}
 		temp = 0.3;
 		reset = true;
+	} else if (lines[3].includes('ask_gpt_content_page_ueberschriften')) {
+		reset = true;
 	}
 	chat.push({ role: 'user', content: prompt });
 	console.log(chat);
@@ -521,8 +523,17 @@ async function askGpt(prompt, tokens) {
 													content: systemprompt,
 												},
 											];
-											resolve(response.trim().replace(/\\"/g, '"'));
+											let text = response;
+											text = text.trim().replace(/\\"/g, '"');
+											text = text.replace('```html', '');
+											text = text.replace('```', '');
+											resolve(text);
 										}
+										let text = response;
+										text = text.trim().replace(/\\"/g, '"');
+										text = text.replace('```html', '');
+										text = text.replace('```', '');
+										chat.push({ role: 'assistant', content: text });
 										resolve(response.trim());
 									} else {
 										console.log("Task still processing. Let's wait 1 seconds and try again.");
@@ -561,7 +572,70 @@ async function askGpt(prompt, tokens) {
 	}
 }
 
+document.getElementById('form').addEventListener('submit', function (event) {
+	event.preventDefault();
+	check_requirements();
+});
+
+function check_requirements() {
+	let tempKeywordinputs = document.getElementsByName('keyword');
+	let errorMsg = document.getElementById('seoErrorMsg');
+	let ignoreButton = document.getElementById('ignoreButton');
+	let cancelButton = document.getElementById('cancelButton');
+	let thema = document.getElementById('nmd_topic_input').value;
+	let abschnitteSelect = document.getElementById('nmd_abschnitte_select').value;
+	let inhaltSelect = document.getElementById('nmd_inhalt_select').value;
+	let wordCountSelect = document.getElementById('nmd_words_count').value;
+
+	if (
+		thema == '' ||
+		thema == null ||
+		thema == undefined ||
+		abschnitteSelect == '' ||
+		abschnitteSelect == null ||
+		abschnitteSelect == undefined ||
+		inhaltSelect == '' ||
+		inhaltSelect == null ||
+		inhaltSelect == undefined ||
+		wordCountSelect == '' ||
+		wordCountSelect == null ||
+		wordCountSelect == undefined
+	) {
+		return;
+	}
+
+	if (tempKeywordinputs[0].value == '' || tempKeywordinputs[0].value == null || tempKeywordinputs[0].value == undefined) {
+		errorMsg.innerHTML = 'Sie haben kein Keyword eingegeben. Für einen optimierten Text sollten Sie mindesten 1 Keyword festlegen.';
+		errorMsg.style.display = 'block';
+		ignoreButton.style.display = 'block';
+		cancelButton.style.display = 'block';
+		return;
+	}
+
+	errorMsg.style.display = 'none';
+	ignoreButton.style.display = 'none';
+	cancelButton.style.display = 'none';
+
+	ask_gpt_content_page();
+}
+
+function cancel() {
+	let errorMsg = document.getElementById('seoErrorMsg');
+	let ignoreButton = document.getElementById('ignoreButton');
+	let cancelButton = document.getElementById('cancelButton');
+	errorMsg.style.display = 'none';
+	ignoreButton.style.display = 'none';
+	cancelButton.style.display = 'none';
+}
+
 function ask_gpt_content_page() {
+	let errorMsg = document.getElementById('seoErrorMsg');
+	let ignoreButton = document.getElementById('ignoreButton');
+	let cancelButton = document.getElementById('cancelButton');
+	errorMsg.style.display = 'none';
+	ignoreButton.style.display = 'none';
+	cancelButton.style.display = 'none';
+
 	setValues();
 	var result;
 

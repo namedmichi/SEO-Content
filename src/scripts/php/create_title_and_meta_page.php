@@ -1,6 +1,6 @@
 <?php
 
-function testScriptMeta()
+function injectAjaxFunctionMeta()
 {
     wp_enqueue_script('my-ajax-script-meta', content_url() . '/plugins/SEOContent/src/scripts/js/ask_gpt_title_meta.js', array('jquery'), '1.0', true);
 
@@ -13,12 +13,12 @@ function testScriptMeta()
 }
 
 
-add_action('scriptTestMeta', 'testScriptMeta');
+add_action('injectAjaxMeta', 'injectAjaxFunctionMeta');
 
 function nmd_create_title_and_meta_callback()
 {
 
-    do_action('scriptTestMeta');
+    do_action('injectAjaxMeta');
     $metaPromptTemplates = content_url() . '/plugins/SEOContent/src/scripts/php/metaPromptTemplates.json';
     $promptPath = content_url() . '/plugins/SEOContent/src/scripts/php/prompts.json';
 

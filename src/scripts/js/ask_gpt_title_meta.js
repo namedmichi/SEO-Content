@@ -747,6 +747,7 @@ async function askGpt(prompt, tokens) {
 										finished = true;
 										try {
 											let content = response.replace(/^"(.*)"$/, '$1');
+
 											resolve(content.trim()); // Resolve the promise with the response content
 										} catch (e) {
 											reject(e); // Reject the promise if there is an error (e.g., in parsing the response)
@@ -1093,7 +1094,7 @@ async function updateTemplateOption() {
 		url: myAjax.ajaxurl,
 		type: 'POST',
 		data: {
-			action: 'update_seocontent_templates_meta_action',
+			action: 'update_seocontent_template',
 		},
 		success: async function (response) {
 			console.log('SEO-Content-Einstellungen wurden aktualisiert.');

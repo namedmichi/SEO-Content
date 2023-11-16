@@ -24,8 +24,8 @@ function myAjax3()
 
 
 
-add_action('scriptTest4', 'myAjax3');
-do_action('scriptTest4');
+add_action('injectAjax4', 'myAjax3');
+do_action('injectAjax4');
 ?>
 <style>
     <?php include 'admin\css\seocontent-admin.css'; ?>
