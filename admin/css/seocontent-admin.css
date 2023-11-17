@@ -195,7 +195,6 @@ nav {
 	display: flex;
 }
 .statusText {
-	margin-left: auto;
 	margin-right: 1rem;
 }
 @media only screen and (max-width: 1278px) {

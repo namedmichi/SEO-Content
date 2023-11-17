@@ -69,17 +69,20 @@ function nmd_create_title_and_meta_callback()
 
                     </div>
                 </div>
-                <label for="marketing">Marketingeinstellungen mit in die Prompts übernehmen</label>
-                <input type="checkbox" name="marketing" id="marketing">
+                <div class="alignMiddle">
+                    <label for="marketing">Unternehmensinformationen mit in die Prompts übernehmen</label>
+                    <input type="checkbox" name="marketing" id="marketing" style="margin-left: 6px;">
+                    <img style="margin: 0;" id="infoIconUnternehmensinfo" class="infoIconMini" src="<?php echo content_url() ?>/plugins/SEOContent/src/assets/infoIcon.png" alt="icon">
+
+                </div>
+                <div id="infoIconUnternehmensinfoText" class="infoTextMini">
+                    Der Titel wird verwendet, um Ihre Seite bzw. Beitrag zu benennen. Aus dem Titel wird von WordPress automatisch die H1-Überschrift, der Seitentitel und die URL generiert. Der Titel hat somit einen Hohen Einfluss auf den Erfolg Ihrer Seite und sollte das Haupt-Keyword gleich zu Beginn enthalten. Zudem wird der Titel in der Beitrags- und Seitenübersicht von WordPress angezeigt. </div>
                 <div class="actions">
                     <div id="buttonBar" style="display: none; flex-wrap: wrap;">
                         <div class="firstButtons">
 
-                            <select name="action" id="nmd_multiple_action">
-                                <option value="" disabled selected>Mehrfachaktionen</option>
-                                <option value="submit">Übernehmen</option>
-                            </select>
-                            <button onclick="multipleAction()" class="button action">Übernehmen</button>
+
+                            <button onclick="setAllSelected()" class="button action">Alle ausgewählten übernehmen</button>
                         </div>
                         <div class="secondButtons">
 
@@ -175,7 +178,7 @@ function nmd_create_title_and_meta_callback()
             <div>
                 <div id="templateTab" class="tab">
                     <div style="display: flex;  align-items: center;" onclick="showTab('template', 3)">
-                        <h2>Vorlagen</h2>
+                        <h2>Prompt-Vorlagen</h2>
                         <span id="arrowUp3" style="margin-left: auto; margin-right: 1rem">
                             <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. -->
                                 <path d="M201.4 137.4c12.5-12.5 32.8-12.5 45.3 0l160 160c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L224 205.3 86.6 342.6c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3l160-160z" />

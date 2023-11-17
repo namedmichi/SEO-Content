@@ -2,6 +2,7 @@ const { registerBlockType } = wp.blocks;
 const { RichText, InspectorControls, BlockControls, AlignmentToolbar, useBlockProps } = wp.blockEditor;
 const { ToggleControl, PanelBody, PanelRow, CheckboxControl, SelectControl, ColorPicker } = wp.components;
 const model = 'text-davinci-003';
+
 function getHomeUrl() {
 	var href = window.location.href;
 	var index = href.indexOf('/wp-admin');
@@ -9,7 +10,7 @@ function getHomeUrl() {
 	return homeUrl;
 }
 var homeUrl = getHomeUrl();
-const url = 'https://api.openai.com/v1/engines/' + model + '/completions';
+const API_ENDPOINT = 'https://api.openai.com/v1/chat/completions';
 import { __experimentalInputControl as InputControl } from '@wordpress/components';
 var settingsArray;
 const request2 = new XMLHttpRequest();
@@ -112,36 +113,125 @@ registerBlockType('namedmichi/seocontentblock', {
 			};
 
 			request.send();
-			await new Promise((resolve) => setTimeout(resolve, 5000));
-			new Promise((resolve) => setTimeout(resolve, 5000));
+			document.getElementById('nmdBlockLoaderDiv').style.display = 'block';
+			document.getElementById('nmd_thema_input').style.display = 'none';
+			let premium = false;
+			let tokens;
+
+			jQuery(function ($) {
+				$.ajax({
+					url: myAjax.ajaxurl,
+					method: 'POST',
+					data: {
+						action: 'get_tokens',
+					},
+					success: function (response) {
+						try {
+							let array = JSON.parse(response);
+							tokens = array['tokens'];
+							premium = true;
+						} catch (error) {
+							premium = false;
+						}
+					},
+					error: function (error) {
+						console.log(error);
+					},
+				});
+			});
+
+			await new Promise((resolve) => setTimeout(resolve, 2000));
 			var result;
 			var thema = document.getElementById('nmd_thema_input').value;
 			console.log('function run');
-			document.getElementById('nmdBlockLoaderDiv').style.display = 'block';
-			document.getElementById('nmd_thema_input').style.display = 'none';
 			var prompt = promptList['aiBlockPrompt'];
 			prompt = prompt.replace('{thema}', thema);
-			fetch(url, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					Authorization: 'Bearer ' + apiKey,
+			let systemprompt = promptList['systemRoleAiBlock'];
+			let chat = [
+				{
+					role: 'system',
+					content: systemprompt,
 				},
-				body: JSON.stringify({
-					prompt: prompt,
-					max_tokens: 150,
-					temperature: 0.7,
-				}),
-			})
-				.then((response) => response.json())
-				.then((data) => (result = data.choices[0].text.split('\n').slice(1).slice(1).join('\n')))
-				.then((data) => console.log(result))
-				.then((data) => {
-					let block = wp.blocks.createBlock('core/paragraph', { content: result });
-					wp.data.dispatch('core/editor').insertBlocks(block);
-					document.getElementById('nmdBlockLoaderDiv').style.display = 'none';
-					wp.data.dispatch('core/editor').removeBlock(props.clientId);
+			];
+
+			chat.push({ role: 'user', content: prompt });
+			if (!premium) {
+				fetch(API_ENDPOINT, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: 'Bearer ' + apiKey,
+					},
+					body: JSON.stringify({
+						messages: chat,
+						temperature: 0.2,
+						model: 'gpt-4-1106-preview',
+					}),
+				})
+					.then((response) => response.json())
+					.then((data) => (result = data.choices[0]['message']['content'].split('\n').slice(1).slice(1).join('\n')))
+					.then((data) => console.log(result))
+					.then((data) => {
+						let block = wp.blocks.createBlock('core/paragraph', { content: result });
+						wp.data.dispatch('core/editor').insertBlocks(block);
+						document.getElementById('nmdBlockLoaderDiv').style.display = 'none';
+						wp.data.dispatch('core/editor').removeBlock(props.clientId);
+					});
+			} else {
+				new Promise((resolve, reject) => {
+					jQuery.ajax({
+						url: myAjax.ajaxurl,
+						method: 'POST',
+						data: {
+							action: 'ask_gpt',
+							chat: chat,
+							temperature: 0.2,
+							model: 'gpt-4-1106-preview',
+						},
+						success: async function (response) {
+							let finished = false;
+							let task_id = response.split('"')[3];
+							task_id = task_id.split('"')[0];
+							while (!finished) {
+								jQuery.ajax({
+									url: myAjax.ajaxurl,
+									method: 'POST',
+									data: {
+										action: 'check_task_status',
+										task_id: task_id,
+									},
+									success: function (response) {
+										console.log(response);
+										if (!response.includes('Task still processing.')) {
+											console.log(response);
+
+											finished = true;
+
+											let result = response;
+											let block = wp.blocks.createBlock('core/paragraph', { content: result });
+											wp.data.dispatch('core/editor').insertBlocks(block);
+											document.getElementById('nmdBlockLoaderDiv').style.display = 'none';
+											wp.data.dispatch('core/editor').removeBlock(props.clientId);
+
+											resolve();
+										} else {
+											console.log("Task still processing. Let's wait 1 seconds and try again.");
+											console.log(response);
+										}
+									},
+									error: function (error) {
+										console.log(error);
+									},
+								});
+								await new Promise((r) => setTimeout(r, 3000));
+							}
+						},
+						error: function (error) {
+							reject(error); // Reject the promise if the AJAX request fails
+						},
+					});
 				});
+			}
 		}
 	},
 	save: (props) => {

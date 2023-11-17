@@ -401,72 +401,153 @@ async function gpt_make_request(content, props, prompt) {
 		},
 	];
 
-	chat.push({ role: 'user', content: prompt });
-	try {
-		const response = await axios.post(
-			API_ENDPOINT,
-			{
-				messages: chat,
-				temperature: 0.6,
-				model: 'gpt-4',
-				n: 1,
+	let premium = false;
+	let tokens;
+	let contentText;
+	await jQuery(function ($) {
+		$.ajax({
+			url: myAjax.ajaxurl,
+			method: 'POST',
+			data: {
+				action: 'get_tokens',
 			},
-			{
-				headers: {
-					'Content-Type': 'application/json',
-					Authorization: `Bearer ${apiKey}`,
+			success: function (response) {
+				try {
+					let array = JSON.parse(response);
+					tokens = array['tokens'];
+					premium = true;
+				} catch (error) {
+					premium = false;
+				}
+			},
+			error: function (error) {
+				console.log(error);
+			},
+		});
+	});
+	await new Promise((resolve) => setTimeout(resolve, 2000));
+	chat.push({ role: 'user', content: prompt });
+	if (!premium) {
+		try {
+			const response = await axios.post(
+				API_ENDPOINT,
+				{
+					messages: chat,
+					temperature: 0.6,
+					model: 'gpt-4-1106-preview',
+					n: 1,
 				},
-			}
-		);
-
-		if (response.status === 200) {
-			const { choices } = response.data;
-			if (choices && choices.length > 0) {
-				console.log(choices);
-				const { message } = choices[0];
-				const { content } = message;
-				console.log(content);
-				var blockId = props.clientId;
-				console.log('BLock	ID: ' + blockId);
-
-				if (props.name == 'core/list') {
-					let contentJsonArray = JSON.parse(content);
-					console.log(contentJsonArray);
-					for (let i = 0; i < contentJsonArray.length; i++) {
-						select('core/block-editor').getBlock(listItemClientIdsArray[i]).attributes.content = contentJsonArray[i]
-							.trim()
-							.replace(/^"(.*)"$/, '$1');
-						var updatedAttributes = select('core/block-editor').getBlock(listItemClientIdsArray[i]).attributes;
-						dispatch('core/block-editor').updateBlock(listItemClientIdsArray[i], updatedAttributes);
-					}
-					document.getElementById('block-' + props.clientId).style.animation = '';
-					return;
+				{
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: `Bearer ${apiKey}`,
+					},
 				}
+			);
 
-				if (select('core/block-editor').getBlock(blockId).attributes.content != undefined) {
-					select('core/block-editor').getBlock(blockId).attributes.content = content.trim().replace(/^"(.*)"$/, '$1');
-				} else {
-					select('core/block-editor').getBlock(blockId).attributes.text = content.trim().replace(/^"(.*)"$/, '$1');
+			if (response.status === 200) {
+				const { choices } = response.data;
+				if (choices && choices.length > 0) {
+					console.log(choices);
+					const { message } = choices[0];
+					contentText = message['content'];
 				}
-
-				var updatedAttributes = select('core/block-editor').getBlock(blockId).attributes;
-
-				dispatch('core/block-editor').updateBlock(blockId, updatedAttributes);
-				document.getElementById('block-' + props.clientId).style.animation = '';
-				console.log(updatedAttributes);
-				return 'test';
-				return content.trim();
 			}
+		} catch (error) {
+			console.error('Error:', error.message);
+			alert(
+				'Es ist ein Fehler aufgetreten. Bitte warten Sie ein paar Sekunden und versuchen es dann erneut. Bei weiteren Probleme kontaktieren Sie bitte den Support'
+			);
+			throw error;
 		}
+	} else {
+		await new Promise((resolve, reject) => {
+			jQuery.ajax({
+				url: myAjax.ajaxurl,
+				method: 'POST',
+				data: {
+					action: 'ask_gpt',
+					chat: chat,
+					temperature: 0.2,
+					model: 'gpt-4-1106-preview',
+				},
+				success: async function (response) {
+					let finished = false;
+					let task_id = response.split('"')[3];
+					task_id = task_id.split('"')[0];
+					while (!finished) {
+						jQuery.ajax({
+							url: myAjax.ajaxurl,
+							method: 'POST',
+							data: {
+								action: 'check_task_status',
+								task_id: task_id,
+							},
+							success: function (response) {
+								console.log(response);
+								if (!response.includes('Task still processing.')) {
+									console.log(response);
+									finished = true;
 
-		throw new Error('Chat completion request failed.');
-	} catch (error) {
-		console.error('Error:', error.message);
-		alert(
-			'Es ist ein Fehler aufgetreten. Bitte warten Sie ein paar Sekunden und versuchen es dann erneut. Bei weiteren Probleme kontaktieren Sie bitte den Support'
-		);
-		throw error;
+									contentText = response;
+									resolve();
+								} else {
+									console.log("Task still processing. Let's wait 1 seconds and try again.");
+									console.log(response);
+								}
+							},
+							error: function (error) {
+								console.log(error);
+							},
+						});
+						await new Promise((r) => setTimeout(r, 3000));
+					}
+					// try {
+
+					// 	response = JSON.parse(response);
+					// 	console.log(response);
+					// 	let content = response['answer'];
+					// 	resolve(content.trim()); // Resolve the promise with the response content
+					// } catch (e) {
+					// 	reject(e); // Reject the promise if there is an error (e.g., in parsing the response)
+					// }
+				},
+				error: function (error) {
+					reject(error); // Reject the promise if the AJAX request fails
+				},
+			});
+		});
 	}
+	console.log(contentText);
+	var blockId = props.clientId;
+	console.log('BLock	ID: ' + blockId);
+
+	if (props.name == 'core/list') {
+		let contentJsonArray = JSON.parse(contentText);
+		console.log(contentJsonArray);
+		for (let i = 0; i < contentJsonArray.length; i++) {
+			select('core/block-editor').getBlock(listItemClientIdsArray[i]).attributes.content = contentJsonArray[i]
+				.trim()
+				.replace(/^"(.*)"$/, '$1');
+			var updatedAttributes = select('core/block-editor').getBlock(listItemClientIdsArray[i]).attributes;
+			dispatch('core/block-editor').updateBlock(listItemClientIdsArray[i], updatedAttributes);
+		}
+		document.getElementById('block-' + props.clientId).style.animation = '';
+		return;
+	}
+
+	if (select('core/block-editor').getBlock(blockId).attributes.content != undefined) {
+		select('core/block-editor').getBlock(blockId).attributes.content = contentText.trim().replace(/^"(.*)"$/, '$1');
+	} else {
+		select('core/block-editor').getBlock(blockId).attributes.text = contentText.trim().replace(/^"(.*)"$/, '$1');
+	}
+
+	var updatedAttributes = select('core/block-editor').getBlock(blockId).attributes;
+
+	dispatch('core/block-editor').updateBlock(blockId, updatedAttributes);
+	document.getElementById('block-' + props.clientId).style.animation = '';
+	console.log(updatedAttributes);
+	return 'test';
 }
 
 export default Download;

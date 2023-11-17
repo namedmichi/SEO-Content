@@ -166,7 +166,7 @@ function nmd_create_image_callback()
                     <textarea name="editPrompt" id="editPrompt" cols="30" rows="1" placeholder="Hier Prompt für die Bildbearbeitung eingeben"></textarea>
                     <button class="button action" id="submit-button">Inpaint absenden</button>
                     <!-- <button class="button action" id="submit-button" onclick="imageVariation()">Variante erstellen(ohne Prompt)</button> -->
-                    <button class="button action" id="submit-button" onclick="reuseImage()">Erstelltes Bild in die bearbeitung senden</button>
+                    <button class="button action" id="submit-button" onclick="reuseImage()">Erstelltes Bild in die Bearbeitung senden</button>
                     <button class="button action" onclick="saveEditedImage()">Bild speichern</button>
                     <input id="image_url" type="text" name="image_url" style="display: none;" />
 

@@ -143,14 +143,14 @@ function nmd_create_content_callback()
                 </form>
             </div>
             <div style="display: flex; align-items: center">
-                <p style="display: none;margin-right: 8px;" id="seoErrorMsg">Das ist ein Fehler</p>
+                <div class="update-nag notice notice-warning inline" style="display: none;margin-top: 3px;" id="seoErrorMsg">Das ist ein Fehler</div>
                 <button style="display: none;height: 32px;margin-right: 8px;" class="button action" id="ignoreButton" onclick="ask_gpt_content_page()">Trotzdem fortfahren</button>
                 <button style="display: none;" class="button action" id="cancelButton" onclick="cancel()">Abbrechen</button>
             </div>
             <div class="wrap">
                 <div class="links container">
 
-                    <div id="keywordTab" class="tab" style="background: grey;" title="Bitte wählen Sie erst die Anzahl der überschriften aus">
+                    <div id="keywordTab" class="tab" style="background: gainsboro;" title="Bitte wählen Sie erst die Anzahl der überschriften aus">
                         <div style="display: flex;  align-items: center;" onclick="showTab('keyword', 1)">
                             <h2>Keyword Optimierer</h2>
                             <span id="arrowUp1" style="margin-left: auto; margin-right: 1rem">
@@ -249,7 +249,7 @@ function nmd_create_content_callback()
                     </div>
                     <div id="templateTab" class="tab">
                         <div style="display: flex;  align-items: center;" onclick="showTab('template', 3)">
-                            <h2>Vorlagen</h2>
+                            <h2>Prompt-Vorlagen</h2>
                             <span id="arrowUp3" style="margin-left: auto; margin-right: 1rem">
                                 <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. -->
                                     <path d="M201.4 137.4c12.5-12.5 32.8-12.5 45.3 0l160 160c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L224 205.3 86.6 342.6c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3l160-160z" />
@@ -392,7 +392,7 @@ function nmd_create_content_callback()
                                 <div>
                                     <div class="alignMiddle">
                                         <label style="font-size: 1rem;">Wähle eine Option:</label>
-                                        <img style="margin: 0;" id="infoIconKontaktinfo" class="infoIconMini" src="<?php echo content_url() ?>/plugins/SEOContent/src/assets/infoIcon.png" alt="icon">
+                                        <img style="margin: 0;" id="infoIcon1ktinfo" class="infoIconMini" src="<?php echo content_url() ?>/plugins/SEOContent/src/assets/infoIcon.png" alt="icon">
                                     </div>
                                     <div id="infoIconKontaktinfoText" class="infoTextMini">
                                         Der Titel wird verwendet, um Ihre Seite bzw. Beitrag zu benennen. Aus dem Titel wird von WordPress automatisch die H1-Überschrift, der Seitentitel und die URL generiert. Der Titel hat somit einen Hohen Einfluss auf den Erfolg Ihrer Seite und sollte das Haupt-Keyword gleich zu Beginn enthalten. Zudem wird der Titel in der Beitrags- und Seitenübersicht von WordPress angezeigt. </div>
@@ -401,7 +401,7 @@ function nmd_create_content_callback()
                                     <input type="radio" id="option1" name="kontaktTyp" value="page">
                                     <label style="font-size:1rem;" for="option1">Kontakseite einbinden</label><br>
                                     <input type="radio" id="option2" name="kontaktTyp" value="form">
-                                    <label style="font-size:1rem;" for="option2">Kontaktforumar einbinden</label><br>
+                                    <label style="font-size:1rem;" for="option2">Kontaktformular einbinden</label><br>
                                     <input type="radio" id="option3" name="kontaktTyp" value="not">
                                     <label style="font-size:1rem;" for="option3">Keins</label><br>
                                 </div>

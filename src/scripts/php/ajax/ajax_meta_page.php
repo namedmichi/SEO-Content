@@ -6,12 +6,12 @@ function update_meta_page()
     //Laden der Wordpress Funktionen.
     try {
 
-        require_once(dirname(dirname(dirname(dirname(dirname(dirname(__DIR__)))))) . '/wp-load.php');
+        require_once(dirname(dirname(dirname(dirname(dirname(dirname(dirname(__DIR__))))))) . '/wp-load.php');
     } catch (\Throwable $th) {
 
         try {
             //code...
-            require_once(dirname(dirname(dirname(dirname(dirname(dirname(dirname(__DIR__))))))) . '/wp-load.php');
+            require_once(dirname(dirname(dirname(dirname(dirname(dirname(dirname(dirname(__DIR__)))))))) . '/wp-load.php');
         } catch (\Throwable $th) {
         }
     }

@@ -1439,25 +1439,25 @@ function createFolderStructure() {
 	Object.keys(data).forEach((folder) => {
 		htmlContent += `<div class="folderTab">`;
 		htmlContent += `<div class="folderHeaderFlex" onclick="showFolder(${folderCount})">`;
+		htmlContent += `<span id="folderArrowUp${folderCount}" style="margin-right: 12px;">` + arrowUp + `</span>`;
+		htmlContent += `<span id="folderArrowDown${folderCount}" style="margin-right: 12px; display: none;">` + arrowDown + `</span>`;
 		htmlContent += `<h2 style='margin-top: 0px'>${folder}</h2>`;
 		htmlContent += `<span class="editPen" onclick="editFolder('${folder}')">` + editPen + `</span>`;
 		htmlContent += `<span onclick="delete_template_Folder('${folder}')">` + deletIcon + `</span>`;
-		htmlContent += `<span id="folderArrowUp${folderCount}" style="margin-right: 1rem;">` + arrowUp + `</span>`;
-		htmlContent += `<span id="folderArrowDown${folderCount}" style="margin-right: 1rem; display: none;">` + arrowDown + `</span>`;
 		htmlContent += `</div>`;
 		htmlContent += `<div id='folderContainer${folderCount}' class='folderContainer'>`;
 
 		Object.keys(data[folder]).forEach((subFolder) => {
-			htmlContent += `<div class='folderTab'>`;
+			htmlContent += `<div class='subFolderTab'>`;
 			htmlContent += `<div class='folderHeaderFlex' onclick='showSubFolder(${subFolderCount})'>`;
-			htmlContent += `<h3 class='subFolderHeader'>${subFolder}</h3>`;
-			htmlContent += `<span class="editPen" onclick="editFolder('${subFolder}')">` + editPen + `</span>`;
-			htmlContent += `<span onclick="delete_template_subFolder('${folder},${subFolder}')">` + deletIcon + `</span>`;
 			htmlContent += `<span id="subFolderArrowUp${subFolderCount}" style="margin-right: 1rem;">` + arrowUp + `</span>`;
 			htmlContent +=
 				`<span id="subFolderArrowDown${subFolderCount}" style="margin-right: 1rem; display: none;">` + arrowDown + `</span>`;
+			htmlContent += `<h3 class='subFolderHeader'>${subFolder}</h3>`;
+			htmlContent += `<span class="editPen" onclick="editFolder('${subFolder}')">` + editPen + `</span>`;
+			htmlContent += `<span onclick="delete_template_subFolder('${folder},${subFolder}')">` + deletIcon + `</span>`;
 			htmlContent += `</div>`;
-			htmlContent += `<div id='subFolderContainer${subFolderCount}' class='subFolderContainer'>`;
+			htmlContent += `<div id='subFolderContainer${subFolderCount}' class='subFolderContainer' style="display:none;">`;
 
 			Object.keys(data[folder][subFolder]).forEach((template) => {
 				htmlContent += `<div class="template_card" onclick="get_template('${folder}', '${subFolder}', '${template}')">`;
